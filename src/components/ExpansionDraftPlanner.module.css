@@ -1,6 +1,6 @@
 .planner {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .controlsPanel,
@@ -16,28 +16,28 @@
 
 .controlsPanel {
   display: grid;
-  gap: 1.25rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  padding: 1.15rem;
 }
 
 .controlsGrid {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(11.25rem, 1fr));
 }
 
 .control {
   display: grid;
-  gap: 0.6rem;
-  padding: 1rem 1.1rem;
+  gap: 0.45rem;
+  padding: 0.85rem 0.9rem;
   background: rgba(255, 248, 239, 0.92);
   border: 1px solid rgba(16, 34, 42, 0.1);
-  border-radius: 1rem;
+  border-radius: 0.9rem;
 }
 
 .controlLabel {
-  font-size: 0.82rem;
-  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -51,7 +51,7 @@
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 0.8rem;
-  padding: 0.8rem 0.9rem;
+  padding: 0.65rem 0.8rem;
   background: rgba(255, 255, 255, 0.88);
   color: var(--foreground);
   font: inherit;
@@ -60,7 +60,7 @@
 .toggleRow {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.55rem;
 }
 
 .checkbox {
@@ -70,12 +70,12 @@
 }
 
 .toggleValue {
-  font-size: 1rem;
+  font-size: 0.92rem;
   line-height: 1.2;
 }
 
 .controlValue {
-  font-size: 1.7rem;
+  font-size: 1.45rem;
   line-height: 1;
 }
 
@@ -93,22 +93,22 @@
 .panelNote,
 .secondaryMeta,
 .teamOwner {
-  font-size: 0.92rem;
+  font-size: 0.84rem;
 }
 
 .metricsGrid {
   display: grid;
-  gap: 1rem;
+  gap: 0.85rem;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .metricCard {
   display: grid;
   gap: 0.35rem;
-  padding: 1rem 1.1rem;
+  padding: 0.85rem 0.95rem;
   background: linear-gradient(135deg, rgba(19, 33, 41, 0.96), rgba(31, 91, 82, 0.92));
   color: #f7efe7;
-  border-radius: 1rem;
+  border-radius: 0.9rem;
 }
 
 .metricLabel {
@@ -119,17 +119,17 @@
 }
 
 .metricValue {
-  font-size: 2rem;
+  font-size: 1.65rem;
   line-height: 1;
 }
 
 .constraintNote {
   margin: 0;
-  padding: 0.9rem 1rem;
+  padding: 0.75rem 0.85rem;
   background: rgba(182, 92, 50, 0.08);
   border: 1px solid rgba(182, 92, 50, 0.14);
   border-radius: 1rem;
-  font-size: 0.94rem;
+  font-size: 0.88rem;
 }
 
 .chartBlock {
@@ -183,7 +183,7 @@
 .impactChart {
   display: block;
   width: 100%;
-  min-width: 52rem;
+  min-width: 48rem;
   height: auto;
 }
 
@@ -201,6 +201,13 @@
 .chartLabel {
   fill: var(--muted);
   font-size: 0.75rem;
+}
+
+.chartValueLabel,
+.chartPointLabel {
+  fill: var(--foreground-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 
 .chartBar {
@@ -231,7 +238,7 @@
 
 .contentGrid {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
   grid-template-columns: 1fr;
   align-items: start;
 }
@@ -241,21 +248,26 @@
 .simulatedPanel {
   display: grid;
   gap: 1rem;
-  padding: 1.35rem;
+  padding: 1.1rem;
   min-height: 0;
 }
 
 .panelSubsection {
   display: grid;
   gap: 1rem;
-  padding-top: 1.25rem;
+  padding-top: 1rem;
   border-top: 1px solid rgba(16, 34, 42, 0.08);
+}
+
+.panelSection {
+  display: grid;
+  gap: 1rem;
 }
 
 .panelHeader {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: end;
 }
 
@@ -263,12 +275,12 @@
   color: var(--accent);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  margin-bottom: 0.35rem;
+  font-size: 0.74rem;
+  margin-bottom: 0.25rem;
 }
 
 .panelTitle {
-  font-size: clamp(1.3rem, 2vw, 1.8rem);
+  font-size: clamp(1.15rem, 1.75vw, 1.55rem);
 }
 
 .tableScroller,
@@ -290,7 +302,7 @@
 .keepersTable th,
 .keepersTable td {
   vertical-align: top;
-  padding: 0.7rem;
+  padding: 0.55rem;
   border-bottom: 1px solid rgba(16, 34, 42, 0.08);
 }
 
@@ -312,7 +324,7 @@
 
 .teamName {
   display: block;
-  font-size: 1rem;
+  font-size: 0.92rem;
   margin-bottom: 0.2rem;
 }
 
@@ -322,14 +334,14 @@
 
 .expansionGrid {
   display: grid;
-  gap: 1rem;
+  gap: 0.85rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .expansionCard {
   display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.85rem;
   background: rgba(255, 248, 239, 0.9);
   border: 1px solid rgba(16, 34, 42, 0.08);
   border-radius: 1rem;
@@ -343,28 +355,28 @@
 }
 
 .expansionHeader h3 {
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .playerList {
   display: grid;
-  gap: 0.8rem;
-  max-height: 72vh;
+  gap: 0.65rem;
+  max-height: 68vh;
   overflow: auto;
   padding-right: 0.25rem;
 }
 
 .playerCard {
   display: grid;
-  gap: 0.65rem;
-  padding: 0.85rem 0.9rem;
+  gap: 0.45rem;
+  padding: 0.72rem 0.78rem;
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(16, 34, 42, 0.08);
-  border-radius: 1rem;
+  border-radius: 0.85rem;
 }
 
 .playerCardCompact {
-  min-width: 11rem;
+  min-width: 9.75rem;
 }
 
 .playerCardTop {
@@ -379,8 +391,8 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 0.28rem 0.55rem;
-  font-size: 0.76rem;
+  padding: 0.22rem 0.45rem;
+  font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -401,7 +413,7 @@
 }
 
 .playerName {
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
@@ -411,28 +423,28 @@
 }
 
 .playerMeta {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: var(--foreground-soft);
 }
 
 .nickname {
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-style: italic;
 }
 
 .rosterGrid {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
 }
 
 .rosterCard {
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.85rem;
   background: rgba(255, 248, 239, 0.94);
   border: 1px solid rgba(16, 34, 42, 0.08);
-  border-radius: 1.15rem;
+  border-radius: 1rem;
 }
 
 .rosterCardExpansion {
@@ -443,9 +455,9 @@
 .rosterHeader {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.6rem;
   align-items: center;
-  padding-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
   border-bottom: 1px solid rgba(16, 34, 42, 0.08);
 }
 
@@ -460,12 +472,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.15rem;
+  height: 2.15rem;
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(182, 92, 50, 0.94), rgba(31, 91, 82, 0.94));
   color: #f7efe7;
-  font-size: 0.86rem;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   flex-shrink: 0;
@@ -473,38 +485,38 @@
 
 .rosterTeamName {
   display: block;
-  font-size: 1rem;
+  font-size: 0.94rem;
 }
 
 .rosterOwner {
   margin-top: 0.18rem;
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
 }
 
 .rosterCount {
   color: var(--foreground-soft);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .rosterBody {
   display: grid;
-  gap: 1rem;
-  max-height: 42rem;
+  gap: 0.85rem;
+  max-height: 36rem;
   overflow: auto;
   padding-right: 0.2rem;
 }
 
 .rosterSection {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.55rem;
 }
 
 .rosterSectionTitle {
   color: var(--foreground);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -512,18 +524,18 @@
 
 .lineupList {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.45rem;
 }
 
 .lineupRow {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.7rem;
+  gap: 0.55rem;
   align-items: center;
-  padding: 0.72rem 0.8rem;
+  padding: 0.58rem 0.65rem;
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(16, 34, 42, 0.08);
-  border-radius: 0.95rem;
+  border-radius: 0.8rem;
 }
 
 .lineupInfo {
@@ -533,18 +545,18 @@
 }
 
 .lineupName {
-  font-size: 0.98rem;
+  font-size: 0.9rem;
   line-height: 1.2;
 }
 
 .lineupMeta {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
 }
 
 .lineupRank {
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -559,12 +571,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.7rem;
-  height: 2rem;
+  min-width: 2.4rem;
+  height: 1.75rem;
   padding: 0 0.45rem;
   border-radius: 0.72rem;
   color: #fff;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -579,10 +591,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.1rem;
+  width: 0.95rem;
   height: 100%;
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
@@ -613,12 +625,12 @@
 .emptyState {
   display: grid;
   place-items: center;
-  min-height: 4.5rem;
+  min-height: 3.75rem;
   border: 1px dashed rgba(16, 34, 42, 0.16);
   border-radius: 1rem;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.52);
-  font-size: 0.92rem;
+  font-size: 0.86rem;
 }
 
 @media (max-width: 1280px) {
@@ -639,7 +651,7 @@
   }
 
   .impactChart {
-    min-width: 46rem;
+    min-width: 42rem;
   }
 
   .rosterBody {

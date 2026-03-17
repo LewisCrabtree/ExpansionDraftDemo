@@ -380,12 +380,12 @@ function TeamImpactChart({
   }
 
   const chartWidth = Math.max(840, data.length * 92);
-  const chartHeight = 360;
+  const chartHeight = 320;
   const margin = {
-    top: 28,
-    right: 64,
-    bottom: 118,
-    left: 64,
+    top: 22,
+    right: 60,
+    bottom: 104,
+    left: 60,
   };
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
@@ -488,6 +488,16 @@ function TeamImpactChart({
                 height={point.barHeight}
                 rx={10}
               />
+              {point.totalValueTaken > 0 ? (
+                <text
+                  className={styles.chartValueLabel}
+                  x={point.x}
+                  y={Math.max(margin.top - 2, point.barY - 8)}
+                  textAnchor="middle"
+                >
+                  {formatCompactNumber(Math.round(point.totalValueTaken))}
+                </text>
+              ) : null}
               <text
                 className={styles.chartLabel}
                 x={point.x}
@@ -503,13 +513,24 @@ function TeamImpactChart({
           <path className={styles.chartLine} d={linePath} />
 
           {points.map((point) => (
-            <circle
-              key={`dot-${point.rosterId}`}
-              className={styles.chartDot}
-              cx={point.x}
-              cy={point.lineY}
-              r={5}
-            />
+            <g key={`dot-${point.rosterId}`}>
+              <circle
+                className={styles.chartDot}
+                cx={point.x}
+                cy={point.lineY}
+                r={5}
+              />
+              {point.assetsTaken > 0 ? (
+                <text
+                  className={styles.chartPointLabel}
+                  x={point.x}
+                  y={Math.max(margin.top + 10, point.lineY - 10)}
+                  textAnchor="middle"
+                >
+                  {point.assetsTaken}
+                </text>
+              ) : null}
+            </g>
           ))}
         </svg>
       </div>
@@ -533,12 +554,12 @@ function RosterValueChart({
   }
 
   const chartWidth = Math.max(840, data.length * 92);
-  const chartHeight = 360;
+  const chartHeight = 320;
   const margin = {
-    top: 28,
+    top: 22,
     right: 24,
-    bottom: 118,
-    left: 64,
+    bottom: 104,
+    left: 60,
   };
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
@@ -631,6 +652,16 @@ function RosterValueChart({
                 height={bar.starterHeight}
                 rx={10}
               />
+              {bar.starterValue > 0 ? (
+                <text
+                  className={styles.chartValueLabel}
+                  x={bar.starterX + barWidth / 2}
+                  y={Math.max(margin.top - 2, bar.starterY - 8)}
+                  textAnchor="middle"
+                >
+                  {formatCompactNumber(Math.round(bar.starterValue))}
+                </text>
+              ) : null}
               <rect
                 className={styles.chartBarRoster}
                 x={bar.totalX}
@@ -639,6 +670,16 @@ function RosterValueChart({
                 height={bar.totalHeight}
                 rx={10}
               />
+              {bar.totalValue > 0 ? (
+                <text
+                  className={styles.chartValueLabel}
+                  x={bar.totalX + barWidth / 2}
+                  y={Math.max(margin.top - 2, bar.totalY - 8)}
+                  textAnchor="middle"
+                >
+                  {formatCompactNumber(Math.round(bar.totalValue))}
+                </text>
+              ) : null}
               <text
                 className={styles.chartLabel}
                 x={bar.centerX}
@@ -1000,7 +1041,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
   );
 
   return (
-    <section className={styles.planner}>
+    <section id="planner" className={styles.planner}>
       <div className={styles.controlsPanel}>
         <div className={styles.controlsGrid}>
           <label className={styles.control}>
@@ -1140,6 +1181,46 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
         <TeamImpactChart data={impactByTeam} countSeriesLabel={countSeriesLabel} />
       </section>
 
+      <section className={styles.chartPanel}>
+        <div className={styles.panelSection}>
+          <div className={styles.panelHeader}>
+            <div>
+              <p className={styles.eyebrow}>Resulting values</p>
+              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
+            </div>
+            <p className={styles.panelNote}>
+              Post-draft KTC value totals for each resulting roster. Missing values
+              count as 0.
+            </p>
+          </div>
+
+          <RosterValueChart
+            data={resultingRosterValues}
+            emptyStateMessage="No roster values are available for the simulated result."
+            ariaLabel="Chart of resulting roster values by team, showing starter value and whole roster value"
+          />
+        </div>
+
+        <div className={styles.panelSubsection}>
+          <div className={styles.panelHeader}>
+            <div>
+              <p className={styles.eyebrow}>Pre-draft values</p>
+              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
+            </div>
+            <p className={styles.panelNote}>
+              KTC value totals for each team before the simulated expansion draft.
+              Missing values count as 0.
+            </p>
+          </div>
+
+          <RosterValueChart
+            data={preDraftRosterValues}
+            emptyStateMessage="No roster values are available for the pre-draft view."
+            ariaLabel="Chart of pre-draft roster values by team, showing starter value and whole roster value"
+          />
+        </div>
+      </section>
+
       <div className={styles.contentGrid}>
         <section className={styles.panel}>
           <div className={styles.panelHeader}>
@@ -1250,44 +1331,6 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
           {resultingLeagueRosters.map((roster) => (
             <ResultingRosterCard key={roster.rosterKey} roster={roster} />
           ))}
-        </div>
-
-        <div className={styles.panelSubsection}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.eyebrow}>Resulting values</p>
-              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
-            </div>
-            <p className={styles.panelNote}>
-              Post-draft KTC value totals for each resulting roster. Missing values
-              count as 0.
-            </p>
-          </div>
-
-          <RosterValueChart
-            data={resultingRosterValues}
-            emptyStateMessage="No roster values are available for the simulated result."
-            ariaLabel="Chart of resulting roster values by team, showing starter value and whole roster value"
-          />
-        </div>
-
-        <div className={styles.panelSubsection}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.eyebrow}>Pre-draft values</p>
-              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
-            </div>
-            <p className={styles.panelNote}>
-              KTC value totals for each team before the simulated expansion draft.
-              Missing values count as 0.
-            </p>
-          </div>
-
-          <RosterValueChart
-            data={preDraftRosterValues}
-            emptyStateMessage="No roster values are available for the pre-draft view."
-            ariaLabel="Chart of pre-draft roster values by team, showing starter value and whole roster value"
-          />
         </div>
       </section>
     </section>
