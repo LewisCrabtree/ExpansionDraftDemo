@@ -1,0 +1,401 @@
+rank,player_name,team,pos,age_years,tier,trend_30_day,value
+1,Josh Allen,BUF,QB1,29.8,Tier 1,1,9999
+2,Bijan Robinson,ATL,RB1,24.1,Tier 1,1,9985
+3,Ja'Marr Chase,CIN,WR1,26,Tier 2,2,9795
+4,Jaxon Smith-Njigba,SEA,WR2,24.1,Tier 2,1,9747
+5,Jahmyr Gibbs,DET,RB2,24,Tier 2,2,9684
+6,Puka Nacua,LAR,WR3,24.8,Tier 2,0,9396
+7,Drake Maye,NEP,QB2,23.5,Tier 2,3,9373
+8,Brock Bowers,LVR,TE1,23.2,Tier 3,4,8580
+9,Trey McBride,ARI,TE2,26.3,Tier 3,6,8346
+10,Malik Nabers,NYG,WR4,22.6,Tier 4,1,7721
+11,Caleb Williams,CHI,QB3,24.3,Tier 4,4,7692
+12,Lamar Jackson,BAL,QB4,29.2,Tier 4,2,7668
+13,Jayden Daniels,WAS,QB5,25.2,Tier 4,2,7666
+14,Amon-Ra St. Brown,DET,WR5,26.4,Tier 4,2,7637
+15,Justin Jefferson,MIN,WR6,26.8,Tier 4,1,7626
+16,Ashton Jeanty,LVR,RB3,22.3,Tier 5,3,7467
+17,CeeDee Lamb,DAL,WR7,26.9,Tier 5,1,7456
+18,Joe Burrow,CIN,QB6,29.3,Tier 6,0,7312
+19,Jeremiyah Love,RFA,RB4,N/A,Tier 6,10,7297
+20,Drake London,ATL,WR8,24.6,Tier 7,0,6865
+21,De'Von Achane,MIA,RB5,24.4,Tier 7,4,6853
+22,Justin Herbert,LAC,QB7,28,Tier 7,1,6840
+23,2027 Early 1st,,PICK,,Tier 7,0,6803
+24,Patrick Mahomes,KCC,QB8,30.5,Tier 7,0,6736
+25,Omarion Hampton,LAC,RB6,23,Tier 7,3,6732
+26,Colston Loveland,CHI,TE3,21.9,Tier 7,11,6723
+27,Tetairoa McMillan,CAR,WR9,22.9,Tier 7,0,6688
+28,Jaxson Dart,NYG,QB9,22.8,Tier 7,2,6581
+29,Tyler Warren,IND,TE4,23.8,Tier 8,0,6355
+30,Jalen Hurts,PHI,QB10,27.6,Tier 8,1,6296
+31,Trevor Lawrence,JAC,QB11,26.4,Tier 8,1,6277
+32,George Pickens,DAL,WR10,25,Tier 9,3,6140
+33,Emeka Egbuka,TBB,WR11,23.4,Tier 9,6,6116
+34,James Cook,BUF,RB7,26.5,Tier 9,1,6042
+35,Jonathan Taylor,IND,RB8,27.2,Tier 9,4,6025
+36,Bo Nix,DEN,QB12,26,Tier 9,6,6008
+37,Brock Purdy,SFO,QB13,26.2,Tier 9,2,5981
+38,2026 Early 1st,,PICK,,Tier 9,2,5929
+39,Garrett Wilson,NYJ,WR12,25.6,Tier 9,2,5907
+40,Nico Collins,HOU,WR13,27,Tier 9,3,5840
+41,Kenneth Walker III,KCC,RB9,25.4,Tier 9,29,5778
+42,Jordan Love,GBP,QB14,27.4,Tier 9,0,5729
+43,Chris Olave,NOS,WR14,25.7,Tier 10,4,5641
+44,Fernando Mendoza,RFA,QB15,N/A,Tier 10,2,5631
+45,2027 Mid 1st,,PICK,,Tier 10,3,5559
+46,Rome Odunze,CHI,WR15,23.8,Tier 10,4,5517
+47,TreVeyon Henderson,NEP,RB10,23.4,Tier 10,16,5500
+48,Harold Fannin,CLE,TE5,21.6,Tier 10,4,5471
+49,Tucker Kraft,GBP,TE6,25.4,Tier 10,7,5454
+50,Quinshon Judkins,CLE,RB11,22.4,Tier 10,4,5420
+51,Ladd McConkey,LAC,WR16,24.4,Tier 10,0,5396
+52,Breece Hall,NYJ,RB12,24.8,Tier 10,4,5368
+53,Luther Burden,CHI,WR17,22.2,Tier 10,5,5349
+54,Carnell Tate,RFA,WR18,N/A,Tier 11,8,5205
+55,Bucky Irving,TBB,RB13,23.6,Tier 11,8,5193
+56,Kyle Pitts,ATL,TE7,25.4,Tier 12,1,5078
+57,Cam Ward,TEN,QB16,23.8,Tier 12,1,5076
+58,Sam LaPorta,DET,TE8,25.2,Tier 12,8,5072
+59,Christian McCaffrey,SFO,RB14,29.8,Tier 12,8,5039
+60,Makai Lemon,RFA,WR19,N/A,Tier 12,8,5027
+61,Marvin Harrison Jr.,ARI,WR20,23.6,Tier 12,6,5016
+62,Dak Prescott,DAL,QB17,32.6,Tier 12,4,5009
+63,2028 Early 1st,,PICK,,Tier 12,4,4967
+64,Brian Thomas Jr.,JAC,WR21,23.4,Tier 12,7,4940
+65,Kyren Williams,LAR,RB15,25.6,Tier 12,3,4922
+66,Tee Higgins,CIN,WR22,27.2,Tier 12,3,4894
+67,Chase Brown,CIN,RB16,26,Tier 12,7,4891
+68,DeVonta Smith,PHI,WR23,27.3,Tier 12,8,4890
+69,Saquon Barkley,PHI,RB17,29.1,Tier 12,2,4878
+70,C.J. Stroud,HOU,QB18,24.4,Tier 12,16,4865
+71,A.J. Brown,PHI,WR24,28.7,Tier 12,1,4852
+72,Baker Mayfield,TBB,QB19,30.9,Tier 12,4,4842
+73,Rashee Rice,KCC,WR25,25.9,Tier 12,33,4811
+74,Sam Darnold,SEA,QB20,28.8,Tier 12,11,4795
+75,2027 Late 1st,,PICK,,Tier 12,1,4784
+76,Jordyn Tyson,RFA,WR26,N/A,Tier 12,19,4776
+77,Kenyon Sadiq,RFA,TE9,N/A,Tier 12,1,4775
+78,Jameson Williams,DET,WR27,25,Tier 12,8,4767
+79,2026 Mid 1st,,PICK,,Tier 12,8,4751
+80,Zay Flowers,BAL,WR28,25.5,Tier 12,3,4707
+81,Travis Etienne,NOS,RB18,27.1,Tier 12,5,4687
+82,Tyler Shough,NOS,QB21,26.5,Tier 12,3,4640
+83,Jared Goff,DET,QB22,31.4,Tier 12,5,4611
+84,Javonte Williams,DAL,RB19,25.9,Tier 12,5,4610
+85,Jaylen Waddle,MIA,WR29,27.3,Tier 12,6,4598
+86,Josh Jacobs,GBP,RB20,28.1,Tier 12,4,4545
+87,Cam Skattebo,NYG,RB21,24.1,Tier 13,24,4470
+88,Malik Willis,MIA,QB23,26.8,Tier 13,56,4463
+89,Alec Pierce,IND,WR30,25.9,Tier 13,10,4457
+90,2028 Mid 1st,,PICK,,Tier 13,8,4441
+91,Oronde Gadsden,LAC,TE10,22.7,Tier 13,12,4417
+92,Bryce Young,CAR,QB24,24.6,Tier 13,10,4369
+93,Daniel Jones,IND,QB25,28.8,Tier 14,1,4170
+94,Kyler Murray,MIN,QB26,28.6,Tier 14,18,4123
+95,Bhayshul Tuten,JAC,RB22,23.1,Tier 14,27,4078
+96,2026 Late 1st,,PICK,,Tier 14,11,4077
+97,Isaiah Likely,NYG,TE11,25.9,Tier 14,30,4012
+98,D.J. Moore,BUF,WR31,28.9,Tier 14,30,3971
+99,2028 Late 1st,,PICK,,Tier 14,9,3957
+100,Jordan Addison,MIN,WR32,24.1,Tier 14,9,3944
+101,RJ Harvey,DEN,RB23,25.1,Tier 15,29,3867
+102,Jake Ferguson,DAL,TE12,27.2,Tier 16,8,3805
+103,Michael Wilson,ARI,WR33,26,Tier 16,7,3798
+104,Dalton Kincaid,BUF,TE13,26.4,Tier 16,14,3793
+105,Derrick Henry,BAL,RB24,32.2,Tier 16,10,3785
+106,2027 Early 2nd,,PICK,,Tier 16,7,3764
+107,Zach Charbonnet,SEA,RB25,25.2,Tier 16,3,3753
+108,Wan'Dale Robinson,TEN,WR34,25.2,Tier 16,2,3751
+109,DK Metcalf,PIT,WR35,28.2,Tier 16,9,3727
+110,George Kittle,SFO,TE14,32.4,Tier 16,30,3727
+111,Romeo Doubs,NEP,WR36,25.9,Tier 16,33,3724
+112,Christian Watson,GBP,WR37,26.8,Tier 16,9,3707
+113,KC Concepcion,RFA,WR38,N/A,Tier 16,15,3703
+114,Ricky Pearsall,SFO,WR39,25.5,Tier 16,15,3673
+115,Travis Hunter,JAC,WR40,22.8,Tier 16,33,3670
+116,Matthew Stafford,LAR,QB27,38.1,Tier 16,10,3638
+117,Parker Washington,JAC,WR41,24,Tier 16,1,3620
+118,Michael Pittman,PIT,WR42,28.4,Tier 16,7,3614
+119,Matthew Golden,GBP,WR43,22.6,Tier 16,6,3609
+120,Kyle Monangai,CHI,RB26,23.8,Tier 16,26,3596
+121,Tyler Allgeier,ARI,RB27,25.9,Tier 16,18,3588
+122,Brenton Strange,JAC,TE15,25.2,Tier 16,17,3577
+123,Jayden Higgins,HOU,WR44,23.2,Tier 16,26,3540
+124,Davante Adams,LAR,WR45,33.2,Tier 16,15,3537
+125,D'Andre Swift,CHI,RB28,27.2,Tier 16,21,3513
+126,David Montgomery,HOU,RB29,28.8,Tier 16,42,3496
+127,2027 Mid 2nd,,PICK,,Tier 17,1,3424
+128,Xavier Worthy,KCC,WR46,22.9,Tier 17,14,3399
+129,Josh Downs,IND,WR47,24.6,Tier 17,5,3392
+130,Terry McLaurin,WAS,WR48,30.5,Tier 17,1,3371
+131,Mike Evans,SFO,WR49,32.6,Tier 17,29,3350
+132,Quentin Johnston,LAC,WR50,24.5,Tier 17,17,3339
+133,Jakobi Meyers,JAC,WR51,29.4,Tier 17,15,3336
+134,Chuba Hubbard,CAR,RB30,26.8,Tier 17,7,3336
+135,Mason Taylor,NYJ,TE16,21.8,Tier 17,18,3327
+136,Rico Dowdle,PIT,RB31,27.8,Tier 17,4,3324
+137,2026 Early 2nd,,PICK,,Tier 17,22,3317
+138,Jayden Reed,GBP,WR52,25.9,Tier 17,7,3299
+139,Blake Corum,LAR,RB32,25.3,Tier 17,20,3296
+140,Courtland Sutton,DEN,WR53,30.4,Tier 17,13,3296
+141,Denzel Boston,RFA,WR54,N/A,Tier 17,60,3272
+142,AJ Barner,SEA,TE17,23.9,Tier 17,11,3264
+143,Jaylen Warren,PIT,RB33,27.4,Tier 17,20,3254
+144,Terrance Ferguson,LAR,TE18,23,Tier 17,20,3224
+145,T.J. Hockenson,MIN,TE19,28.7,Tier 17,7,3194
+146,Omar Cooper Jr.,RFA,WR55,N/A,Tier 17,38,3193
+147,Mark Andrews,BAL,TE20,30.5,Tier 17,14,3184
+148,David Njoku,FA,TE21,29.7,Tier 17,19,3172
+149,2028 Early 2nd,,PICK,,Tier 17,7,3140
+150,Michael Penix Jr.,ATL,QB28,25.8,Tier 17,40,3134
+151,Jalen Coker,CAR,WR56,24.4,Tier 16,12,3131
+152,Chigoziem Okonkwo,WAS,TE22,26.5,Tier 16,44,3114
+153,2027 Late 2nd,,PICK,,Tier 16,9,3109
+154,Rashid Shaheed,SEA,WR57,27.5,Tier 16,21,3100
+155,Jalen McMillan,TBB,WR58,24.3,Tier 16,10,3074
+156,2026 Mid 2nd,,PICK,,Tier 16,17,3069
+157,Jadarian Price,RFA,RB34,N/A,Tier 16,26,3059
+158,Khalil Shakir,BUF,WR59,26.1,Tier 16,17,3052
+159,Dallas Goedert,PHI,TE23,31.2,Tier 16,16,3046
+160,J.K. Dobbins,DEN,RB35,27.2,Tier 16,17,3037
+161,Troy Franklin,DEN,WR60,23.1,Tier 16,22,3003
+162,Elijah Arroyo,SEA,TE24,22.9,Tier 16,11,2996
+163,Rhamondre Stevenson,NEP,RB36,28,Tier 16,12,2993
+164,Mac Jones,SFO,QB29,27.5,Tier 16,15,2976
+165,Eli Stowers,RFA,TE25,N/A,Tier 16,41,2966
+166,Ty Simpson,RFA,QB30,N/A,Tier 16,12,2957
+167,Kayshon Boutte,NEP,WR61,23.8,Tier 16,19,2940
+168,Kenneth Gainwell,TBB,RB37,27,Tier 16,8,2929
+169,Cade Otton,TBB,TE26,26.9,Tier 16,4,2912
+170,Gunnar Helm,TEN,TE27,23.5,Tier 16,6,2894
+171,Chris Godwin,TBB,WR62,30,Tier 16,11,2885
+172,Woody Marks,HOU,RB38,25.2,Tier 16,43,2878
+173,Jauan Jennings,SFO,WR63,28.7,Tier 16,16,2871
+174,Pat Bryant,DEN,WR64,23.3,Tier 16,14,2869
+175,J.J. McCarthy,MIN,QB31,23.2,Tier 16,58,2864
+176,Jonathon Brooks,CAR,RB39,22.6,Tier 16,25,2856
+177,2028 Mid 2nd,,PICK,,Tier 16,6,2844
+178,2026 Late 2nd,,PICK,,Tier 16,15,2836
+179,Jacoby Brissett,ARI,QB32,33.3,Tier 16,30,2835
+180,Tre Harris,LAC,WR65,24,Tier 16,5,2832
+181,Elic Ayomanor,TEN,WR66,22.8,Tier 16,20,2829
+182,Jacory Croskey-Merritt,WAS,RB40,24.9,Tier 16,27,2823
+183,Travis Kelce,KCC,TE28,36.4,Tier 16,42,2816
+184,Juwan Johnson,NOS,TE29,29.5,Tier 16,5,2812
+185,Isaac TeSlaa,DET,WR67,24.1,Tier 16,27,2807
+186,Trey Benson,ARI,RB41,23.6,Tier 16,52,2779
+187,Hunter Henry,NEP,TE30,31.3,Tier 16,27,2775
+188,Jaylin Noel,HOU,WR68,23.5,Tier 16,18,2773
+189,2028 Late 2nd,,PICK,,Tier 16,1,2771
+190,Theo Johnson,NYG,TE31,25,Tier 16,66,2771
+191,Braelon Allen,NYJ,RB42,22.2,Tier 16,24,2760
+192,Chimere Dike,TEN,WR69,24.2,Tier 16,30,2752
+193,Jake Tonges,SFO,TE32,26.7,Tier 16,12,2752
+194,Shedeur Sanders,CLE,QB33,24.1,Tier 16,39,2743
+195,Jerry Jeudy,CLE,WR70,26.9,Tier 16,3,2742
+196,Dalton Schultz,HOU,TE33,29.7,Tier 16,15,2738
+197,Michael Mayer,LVR,TE34,24.7,Tier 16,15,2734
+198,Jonah Coleman,RFA,RB44,N/A,Tier 16,93,2726
+199,Rachaad White,WAS,RB43,27.2,Tier 16,6,2726
+200,Tory Horton,SEA,WR71,23.3,Tier 16,15,2724
+201,Kyle Williams,NEP,WR72,23.3,Tier 16,24,2691
+202,Tua Tagovailoa,ATL,QB34,28,Tier 16,6,2691
+203,Jordan Mason,MIN,RB45,26.8,Tier 16,3,2688
+204,Dylan Sampson,CLE,RB46,21.5,Tier 16,19,2683
+205,Tyjae Spears,TEN,RB47,24.8,Tier 16,31,2680
+206,Adonai Mitchell,NYJ,WR73,23.4,Tier 16,31,2668
+207,Brandon Aiyuk,SFO,WR74,28,Tier 16,16,2636
+208,Tony Pollard,TEN,RB48,28.9,Tier 16,22,2632
+209,Pat Freiermuth,PIT,TE35,27.4,Tier 16,1,2592
+210,Tyrone Tracy,NYG,RB49,26.3,Tier 16,32,2578
+211,Ollie Gordon,MIA,RB50,22.2,Tier 16,15,2572
+212,Anthony Richardson,IND,QB35,23.8,Tier 16,8,2562
+213,Keon Coleman,BUF,WR75,22.8,Tier 16,6,2560
+214,Marvin Mims,DEN,WR76,24,Tier 16,12,2556
+215,2027 Early 3rd,,PICK,,Tier 16,3,2543
+216,Tank Dell,HOU,WR77,26.4,Tier 16,5,2525
+217,Deebo Samuel,WAS,WR78,30.2,Tier 16,21,2522
+218,Jalen Milroe,SEA,QB36,23.2,Tier 16,4,2512
+219,Tank Bigsby,PHI,RB51,24.5,Tier 16,14,2510
+220,Colby Parkinson,LAR,TE36,27.2,Tier 16,13,2509
+221,Nicholas Singleton,RFA,RB52,N/A,Tier 16,114,2501
+222,Ja'Tavion Sanders,CAR,TE37,23,Tier 16,19,2497
+223,Kaleb Johnson,PIT,RB53,22.6,Tier 16,38,2490
+224,Tre Tucker,LVR,WR79,25,Tier 16,25,2489
+225,Sean Tucker,TBB,RB54,24.4,Tier 16,26,2484
+226,Kimani Vidal,LAC,RB55,24.6,Tier 16,32,2484
+227,Elijah Sarratt,RFA,WR80,N/A,Tier 16,75,2475
+228,Keaton Mitchell,LAC,RB56,24.2,Tier 16,12,2459
+229,Cole Kmet,CHI,TE38,27,Tier 16,29,2432
+230,Ben Sinnott,WAS,TE39,23.8,Tier 16,36,2413
+231,Jack Bech,LVR,WR81,23.2,Tier 16,25,2409
+232,2027 Mid 3rd,,PICK,,Tier 16,10,2395
+233,Tez Johnson,TBB,WR82,23.8,Tier 16,16,2389
+234,Isiah Pacheco,DET,RB57,27,Tier 16,0,2384
+235,Brian Robinson,SFO,RB58,27,Tier 16,24,2363
+236,2026 Early 3rd,,PICK,,Tier 16,23,2362
+237,Devin Neal,NOS,RB59,22.6,Tier 16,52,2347
+238,Darnell Washington,PIT,TE40,24.6,Tier 16,28,2329
+239,Jaylen Wright,MIA,RB60,23,Tier 16,23,2324
+240,Isaiah Bond,CLE,WR83,22,Tier 16,13,2313
+241,Luke Musgrave,GBP,TE41,25.5,Tier 16,19,2313
+242,Stefon Diggs,FA,WR84,32.3,Tier 16,59,2303
+243,Dontayvion Wicks,GBP,WR85,24.8,Tier 16,14,2300
+244,2026 Mid 3rd,,PICK,,Tier 16,17,2288
+245,Tyreek Hill,FA,WR86,32,Tier 16,19,2275
+246,Mike Washington Jr.,RFA,RB61,N/A,Tier 16,28,2249
+247,Malik Washington,MIA,WR87,25.2,Tier 16,10,2245
+248,2027 Late 3rd,,PICK,,Tier 16,16,2237
+249,Evan Engram,DEN,TE42,31.5,Tier 16,35,2234
+250,Demario Douglas,NEP,WR88,25.3,Tier 16,16,2229
+251,Jalen Nailor,LVR,WR89,27,Tier 16,21,2218
+252,Justin Fields,NYJ,QB37,27,Tier 16,5,2214
+253,Trinidad Chambliss,RFA,QB38,N/A,Tier 16,62,2205
+254,Emmett Johnson,RFA,RB62,N/A,Tier 16,53,2192
+255,Zachariah Branch,RFA,WR90,N/A,Tier 16,117,2191
+256,2028 Early 3rd,,PICK,,Tier 16,15,2191
+257,Alvin Kamara,NOS,RB63,30.6,Tier 16,37,2186
+258,2026 Late 3rd,,PICK,,Tier 16,17,2177
+259,Trevor Etienne,CAR,RB64,21.7,Tier 16,6,2169
+260,Brashard Smith,KCC,RB65,22.9,Tier 16,42,2159
+261,Cedric Tillman,CLE,WR91,25.9,Tier 16,12,2146
+262,Dont'e Thornton,LVR,WR92,23.3,Tier 16,18,2141
+263,Will Howard,PIT,QB39,24.5,Tier 16,13,2122
+264,Emanuel Wilson,SEA,RB66,26.8,Tier 16,22,2115
+265,Xavier Legette,CAR,WR93,25.1,Tier 16,37,2106
+266,2028 Mid 3rd,,PICK,,Tier 16,12,2106
+267,Rashod Bateman,BAL,WR94,26.3,Tier 16,11,2101
+268,Noah Gray,KCC,TE43,26.9,Tier 16,41,2098
+269,Dawson Knox,BUF,TE44,29.3,Tier 16,18,2095
+270,Kendre Miller,NOS,RB67,23.8,Tier 16,45,2092
+271,Jaydon Blue,DAL,RB68,22.2,Tier 16,36,2089
+272,James Conner,ARI,RB69,30.9,Tier 16,17,2086
+273,Geno Smith,NYJ,QB40,35.4,Tier 16,53,2071
+274,Chris Brazzell II,RFA,WR95,N/A,Tier 16,103,2065
+275,Quinn Ewers,MIA,QB41,22.8,Tier 16,39,2063
+276,Garrett Nussmeier,RFA,QB42,N/A,Tier 16,25,2062
+277,DJ Giddens,IND,RB70,22.6,Tier 16,18,2061
+278,Chris Rodriguez,JAC,RB71,25.5,Tier 16,36,2047
+279,LeQuint Allen,JAC,RB72,21.6,Tier 16,10,2039
+280,Aaron Jones,MIN,RB73,31.3,Tier 16,48,2022
+281,Darnell Mooney,NYG,WR96,28.4,Tier 16,26,1991
+282,Malachi Fields,RFA,WR97,N/A,Tier 16,165,1973
+283,Ray Davis,BUF,RB74,26.3,Tier 16,31,1970
+284,Christian Kirk,HOU,WR98,29.3,Tier 16,19,1965
+285,Isaiah Davis,NYJ,RB75,24.1,Tier 16,49,1963
+286,Daniel Bellinger,TEN,TE45,25.5,Tier 16,5,1962
+287,Jaylin Lane,WAS,WR99,23.9,Tier 16,28,1948
+288,Najee Harris,LAC,RB76,28,Tier 16,17,1929
+289,2028 Late 3rd,,PICK,,Tier 16,28,1924
+290,Chris Bell,RFA,WR100,N/A,Tier 16,125,1917
+291,Kaytron Allen,RFA,RB77,N/A,Tier 16,82,1902
+292,Ryan Flournoy,DAL,WR101,26.4,Tier 16,33,1896
+293,Noah Fant,NOS,TE46,28.3,Tier 16,14,1891
+294,Jonnu Smith,FA,TE47,30.6,Tier 16,39,1882
+295,Jordan James,SFO,RB78,22,Tier 16,7,1874
+296,Xavier Hutchinson,HOU,WR103,25.8,Tier 16,35,1866
+297,Tyquan Thornton,KCC,WR102,25.6,Tier 16,6,1866
+298,Cooper Kupp,SEA,WR104,32.8,Tier 16,9,1850
+299,Joe Milton,DAL,QB43,26,Tier 16,17,1838
+300,Germie Bernard,RFA,WR105,N/A,Tier 16,62,1837
+301,Ja'Kobi Lane,RFA,WR106,N/A,Tier 16,75,1834
+302,Jalen Royals,KCC,WR108,23.1,Tier 16,25,1830
+303,Luke McCaffrey,WAS,WR107,25,Tier 16,35,1830
+304,2027 Early 4th,,PICK,,Tier 16,31,1826
+305,Aaron Rodgers,PIT,QB44,42.3,Tier 16,7,1819
+306,John Metchie,CAR,WR109,25.7,Tier 16,42,1817
+307,Greg Dulcich,MIA,TE48,26,Tier 16,25,1815
+308,Riley Leonard,IND,QB45,23.5,Tier 16,23,1814
+309,Kirk Cousins,FA,QB46,37.6,Tier 16,2,1808
+310,Tommy Tremble,CAR,TE49,25.8,Tier 16,33,1804
+311,2026 Early 4th,,PICK,,Tier 16,34,1797
+312,Spencer Rattler,NOS,QB47,25.5,Tier 16,19,1795
+313,Max Klare,RFA,TE50,N/A,Tier 16,115,1790
+314,Cade Stover,HOU,TE51,25.8,Tier 16,30,1781
+315,2027 Mid 4th,,PICK,,Tier 16,17,1778
+316,Keenan Allen,LAC,WR110,33.9,Tier 16,36,1760
+317,Mike Gesicki,CIN,TE52,30.4,Tier 16,41,1757
+318,Calvin Ridley,TEN,WR111,31.2,Tier 16,16,1755
+319,Roman Wilson,PIT,WR112,24.7,Tier 16,35,1752
+320,Michael Trigg,RFA,TE53,N/A,Tier 16,109,1750
+321,Jarquez Hunter,LAR,RB79,23.2,Tier 16,20,1744
+322,Devaughn Vele,NOS,WR113,28.2,Tier 16,39,1743
+323,MarShawn Lloyd,GBP,RB80,25.2,Tier 16,21,1740
+324,Marquise Brown,KCC,WR114,28.8,Tier 16,35,1723
+325,Jahan Dotson,ATL,WR115,26,Tier 16,7,1721
+326,KeAndre Lambert-Smith,LAC,WR116,24.4,Tier 16,19,1720
+327,Will Shipley,PHI,RB81,23.5,Tier 16,37,1713
+328,Andrei Iosivas,CIN,WR117,26.4,Tier 16,39,1709
+329,Dillon Gabriel,CLE,QB48,25.2,Tier 16,22,1707
+330,2026 Mid 4th,,PICK,,Tier 16,33,1703
+331,Tyler Higbee,LAR,TE54,33.2,Tier 16,8,1692
+332,Audric Estime,NOS,RB82,22.5,Tier 16,55,1689
+333,Tahj Brooks,CIN,RB83,23.8,Tier 16,38,1677
+334,Isaac Guerendo,SFO,RB84,25.7,Tier 16,12,1671
+335,Davis Mills,HOU,QB49,27.4,Tier 16,12,1657
+336,Savion Williams,GBP,WR118,24.3,Tier 16,20,1651
+337,Calvin Austin III,NYG,WR119,27,Tier 16,51,1649
+338,Jordan Whittington,LAR,WR120,25.4,Tier 16,23,1641
+339,2028 Early 4th,,PICK,,Tier 16,34,1634
+340,2027 Late 4th,,PICK,,Tier 16,22,1631
+341,Ja'Lynn Polk,NOS,WR121,23.9,Tier 16,3,1626
+342,Luke Schoonmaker,DAL,TE55,27.5,Tier 16,20,1614
+343,Jimmy Horn,CAR,WR122,23.5,Tier 16,35,1608
+344,Treylon Burks,WAS,WR123,26,Tier 16,17,1591
+345,Joshua Palmer,BUF,WR124,26.5,Tier 16,14,1589
+346,Erick All,CIN,TE56,25.5,Tier 16,33,1586
+347,Darius Slayton,NYG,WR125,29.2,Tier 16,49,1580
+348,Kendrick Bourne,ARI,WR126,30.6,Tier 16,13,1578
+349,Jerome Ford,WAS,RB85,26.5,Tier 16,8,1572
+350,Jameis Winston,NYG,QB50,32.2,Tier 16,29,1565
+351,2028 Mid 4th,,PICK,,Tier 16,26,1556
+352,2026 Late 4th,,PICK,,Tier 16,38,1551
+353,Elijah Higgins,ARI,TE57,25.4,Tier 16,32,1548
+354,Darren Waller,MIA,TE58,33.5,Tier 16,57,1537
+355,Jaleel McLaughlin,DEN,RB86,25.5,Tier 16,33,1537
+356,Raheim Sanders,CLE,RB87,23.8,Tier 16,14,1529
+357,Tyson Bagent,CHI,QB51,25.8,Tier 16,33,1525
+358,Xavier Restrepo,TEN,WR127,23.9,Tier 16,29,1515
+359,Efton Chism,NEP,WR128,24.4,Tier 16,19,1515
+360,Skyler Bell,RFA,WR129,N/A,Tier 16,83,1514
+361,Marcus Mariota,WAS,QB52,32.4,Tier 16,49,1513
+362,Mitchell Evans,CAR,TE59,23,Tier 16,36,1500
+363,Devin Singletary,NYG,RB88,28.5,Tier 16,45,1500
+364,Bam Knight,ARI,RB89,24.9,Tier 16,69,1492
+365,Tutu Atwell,MIA,WR130,26.4,Tier 16,20,1478
+366,Jalen Tolbert,MIA,WR131,27,Tier 16,32,1472
+367,Konata Mumpfield,LAR,WR132,23.4,Tier 16,32,1470
+368,Devontez Walker,BAL,WR133,24.7,Tier 16,14,1452
+369,Davis Allen,LAR,TE60,25.1,Tier 16,46,1445
+370,Michael Carter,ARI,RB90,26.8,Tier 16,54,1438
+371,Joe Mixon,FA,RB91,29.6,Tier 16,65,1433
+372,Malik Davis,DAL,RB92,27.3,Tier 16,46,1424
+373,Roschon Johnson,CHI,RB93,25.1,Tier 16,24,1422
+374,Antonio Williams,RFA,WR134,N/A,Tier 16,105,1416
+375,Jack Endries,RFA,TE61,N/A,Tier 16,151,1409
+376,Brevin Jordan,HOU,TE62,25.7,Tier 16,39,1401
+377,Zach Ertz,WAS,TE63,35.3,Tier 16,21,1399
+378,Olamide Zaccheaus,ATL,WR135,28.6,Tier 16,27,1391
+379,Dyami Brown,WAS,WR136,26.4,Tier 16,24,1382
+380,Will Levis,TEN,QB53,26.7,Tier 16,19,1369
+381,Brock Wright,DET,TE64,27.3,Tier 16,55,1364
+382,Jared Wiley,KCC,TE65,25.4,Tier 16,45,1364
+383,2028 Late 4th,,PICK,,Tier 16,30,1341
+384,Justice Hill,BAL,RB94,28.3,Tier 16,24,1340
+385,Ty Johnson,BUF,RB95,28.5,Tier 16,49,1319
+386,Tanner McKee,PHI,QB54,25.9,Tier 16,22,1317
+387,Kevin Coleman,RFA,WR137,N/A,Tier 16,73,1316
+388,Charlie Kolar,LAC,TE66,27.1,Tier 16,14,1297
+389,Trey Lance,LAC,QB55,25.8,Tier 16,27,1293
+390,Tai Felton,MIN,WR138,23,Tier 16,22,1291
+391,Jalin Hyatt,NYG,WR139,24.5,Tier 16,36,1285
+392,Greg Dortch,ARI,WR140,27.8,Tier 16,44,1279
+393,Emari Demercado,KCC,RB96,27.2,Tier 16,44,1268
+394,Phil Mafah,DAL,RB97,23.4,Tier 16,22,1268
+395,Demond Claiborne,RFA,RB98,N/A,Tier 16,105,1266
+396,Grant Calcaterra,PHI,TE67,27.3,Tier 16,32,1259
+397,Jeremy Ruckert,NYJ,TE68,25.6,Tier 16,44,1258
+398,Tahj Washington,MIA,WR141,24.8,Tier 16,35,1252
+399,Tyler Huntley,BAL,QB56,28.1,Tier 16,27,1247
+400,Trey Palmer,NOS,WR142,25,Tier 16,32,1245

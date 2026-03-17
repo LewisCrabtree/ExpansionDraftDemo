@@ -1,0 +1,5 @@
+{
+  "source": "manual-overrides",
+  "description": "Optional rank/value overrides used by the web app. Lower rank is better.",
+  "players": {}
+}

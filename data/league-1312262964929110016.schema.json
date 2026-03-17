@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sleeper league snapshot 1312262964929110016",
+  "type": "object",
+  "required": [
+    "snapshot_meta",
+    "sources",
+    "state",
+    "league",
+    "users",
+    "rosters",
+    "traded_picks",
+    "winners_bracket",
+    "losers_bracket",
+    "drafts",
+    "draft_details",
+    "matchups_by_week",
+    "transactions_by_week",
+    "players",
+    "derived"
+  ],
+  "properties": {
+    "snapshot_meta": {
+      "type": "object",
+      "required": [
+        "fetched_at",
+        "league_id",
+        "season",
+        "status",
+        "app_context"
+      ],
+      "properties": {
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "league_id": {
+          "type": "string"
+        },
+        "season": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "app_context": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "object",
+      "required": [
+        "docs",
+        "api_root",
+        "league_url"
+      ],
+      "properties": {
+        "docs": {
+          "type": "string",
+          "format": "uri"
+        },
+        "api_root": {
+          "type": "string",
+          "format": "uri"
+        },
+        "league_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "league": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "users": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "rosters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "traded_picks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "winners_bracket": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "losers_bracket": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "drafts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "draft_details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "draft",
+          "picks",
+          "traded_picks"
+        ],
+        "properties": {
+          "draft": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "picks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "traded_picks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "matchups_by_week": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "transactions_by_week": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "players": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "derived": {
+      "type": "object",
+      "required": [
+        "total_users",
+        "total_rosters",
+        "total_unique_players",
+        "total_traded_picks",
+        "total_drafts",
+        "total_draft_picks",
+        "matchup_counts_by_week",
+        "transaction_counts_by_week",
+        "roster_team_lookup"
+      ],
+      "properties": {
+        "total_users": {
+          "type": "integer"
+        },
+        "total_rosters": {
+          "type": "integer"
+        },
+        "total_unique_players": {
+          "type": "integer"
+        },
+        "total_traded_picks": {
+          "type": "integer"
+        },
+        "total_drafts": {
+          "type": "integer"
+        },
+        "total_draft_picks": {
+          "type": "integer"
+        },
+        "matchup_counts_by_week": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "transaction_counts_by_week": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "roster_team_lookup": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "roster_id",
+              "owner_id",
+              "display_name",
+              "team_name",
+              "player_count"
+            ],
+            "properties": {
+              "roster_id": {
+                "type": "integer"
+              },
+              "owner_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "display_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "team_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "player_count": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

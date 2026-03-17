@@ -1,66 +1,65 @@
-import Image from "next/image";
+import { ExpansionDraftPlanner } from "@/components/ExpansionDraftPlanner";
+import { loadPlannerData } from "@/lib/planner-data";
+
 import styles from "./page.module.css";
 
-export default function Home() {
+export default async function Home() {
+  const plannerData = await loadPlannerData();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <p className={styles.kicker}>Expansion draft sandbox</p>
+            <h1 className={styles.title}>{plannerData.league.name}</h1>
+            <p className={styles.subtitle}>
+              Model keeper thresholds, expansion selections, and the leftover
+              player pool for a two-team expansion using the latest saved Sleeper
+              snapshot.
+            </p>
+          </div>
+
+          <div className={styles.heroMeta}>
+            <div className={styles.metaBlock}>
+              <span className={styles.metaLabel}>League</span>
+              <strong>
+                {plannerData.league.totalRosters} teams - {plannerData.league.season}
+              </strong>
+            </div>
+            <div className={styles.metaBlock}>
+              <span className={styles.metaLabel}>Snapshot</span>
+              <strong>
+                {new Date(plannerData.league.snapshotTime).toLocaleString("en-CA", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </strong>
+            </div>
+            <div className={styles.metaBlock}>
+              <span className={styles.metaLabel}>Ranking source</span>
+              <strong>{plannerData.rankingSourceLabel}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.notesBar}>
+          <p>{plannerData.rankingNote}</p>
+          <div className={styles.links}>
+            <a href={plannerData.links.sleeperLeague} target="_blank" rel="noreferrer">
+              Sleeper league
+            </a>
+            <a href={plannerData.links.keepTradeCutLeague} target="_blank" rel="noreferrer">
+              KeepTradeCut league page
+            </a>
+            <a href={plannerData.links.sleeperDocs} target="_blank" rel="noreferrer">
+              Sleeper API docs
+            </a>
+          </div>
+        </section>
+
+        <ExpansionDraftPlanner data={plannerData} />
+      </div>
+    </main>
   );
 }

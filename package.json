@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "snapshot": "tsx scripts/fetch-sleeper-league.ts"
   },
   "dependencies": {
     "next": "16.1.7",
@@ -19,6 +20,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.7",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

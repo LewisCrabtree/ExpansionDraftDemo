@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Expansion Draft Planner
 
-## Getting Started
+Next.js app for simulating a two-team dynasty expansion draft from a Sleeper league snapshot, using local KeepTradeCut rankings as the primary value source.
 
-First, run the development server:
+## What This Repo Does
+
+This project lets you load one saved Sleeper league snapshot and explore a simulated expansion draft with a UI for:
+
+- keepers per team
+- max picks from one existing team
+- include rookie picks
+- include free agents
+- snake vs linear expansion order
+
+It also renders:
+
+- protected keepers by team
+- projected selections for both expansion teams
+- resulting post-draft league rosters
+- team impact charts
+- resulting roster value charts
+
+## Current Data Source
+
+The app currently uses:
+
+- Sleeper snapshot data from `data/league-1312262964929110016.snapshot.json`
+- KTC rankings from `data/ktc_16032026.csv`
+
+Ranking priority is:
+
+1. manual overrides in `data/player-rankings.overrides.json`
+2. KTC CSV values
+3. Sleeper `search_rank` fallback
+
+## Local Development
+
+Requirements:
+
+- Node.js 20+
+- `pnpm`
+
+Install and run:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Useful commands:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm snapshot
+pnpm lint
+pnpm build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Snapshot Refresh
 
-## Learn More
+To refresh the local Sleeper snapshot for this league:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm snapshot
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+That script writes files into `data/`, including:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `league-1312262964929110016.snapshot.json`
+- `league-1312262964929110016.schema.json`
+- `league-1312262964929110016.db-summary.md`
 
-## Deploy on Vercel
+## Deploying to Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Fastest path:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push the repo to GitHub.
+2. Import the repo into Vercel.
+3. Accept the default Next.js settings.
+4. Deploy.
+
+This app reads checked-in local data files, so the basic deployment does not require environment variables.
+
+If you want a one-off deploy from your machine instead:
+
+```bash
+pnpm i -g vercel
+vercel
+vercel deploy --prod
+```
+
+## Privacy Note
+
+This repo contains league-specific data in `data/`, including owner names, team names, roster contents, trades, and draft information from the saved Sleeper snapshot.
+
+If you do not want that information to be public:
+
+- keep the GitHub repo private
+- or replace/sanitize the contents of `data/` before publishing
+
+## Project Structure
+
+```text
+src/app/                Next.js app shell and page
+src/components/         planner UI
+src/lib/                data loading and shaping
+scripts/                Sleeper snapshot fetch script
+data/                   local snapshot and ranking inputs
+```
