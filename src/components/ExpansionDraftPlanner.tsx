@@ -39,7 +39,7 @@ type TeamDraftImpact = {
   totalValueTaken: number;
 };
 
-type ResultingRosterValue = {
+type RosterValueSnapshot = {
   rosterKey: string;
   teamName: string;
   ownerName: string;
@@ -517,15 +517,19 @@ function TeamImpactChart({
   );
 }
 
-function ResultingRosterValueChart({ data }: { data: ResultingRosterValue[] }) {
+function RosterValueChart({
+  data,
+  emptyStateMessage,
+  ariaLabel,
+}: {
+  data: RosterValueSnapshot[];
+  emptyStateMessage: string;
+  ariaLabel: string;
+}) {
   const maxValue = Math.max(...data.map((item) => item.totalValue), 0);
 
   if (maxValue === 0) {
-    return (
-      <div className={styles.emptyState}>
-        No roster values are available for the simulated result.
-      </div>
-    );
+    return <div className={styles.emptyState}>{emptyStateMessage}</div>;
   }
 
   const chartWidth = Math.max(840, data.length * 92);
@@ -583,7 +587,7 @@ function ResultingRosterValueChart({ data }: { data: ResultingRosterValue[] }) {
           className={styles.impactChart}
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
           role="img"
-          aria-label="Chart of resulting roster values by team, showing starter value and whole roster value"
+          aria-label={ariaLabel}
         >
           {Array.from({ length: gridLineCount + 1 }, (_, index) => {
             const ratio = index / gridLineCount;
@@ -967,7 +971,20 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
       } satisfies ResultingLeagueRoster;
     }),
   ];
-  const resultingRosterValues: ResultingRosterValue[] = resultingLeagueRosters.map(
+  const preDraftRosterValues: RosterValueSnapshot[] = protectedRosters.map((roster) => {
+    const { starters, benchAssets } = buildLineup(roster.assets, starterSlots);
+    const starterAssets = starters.map((starter) => starter.asset);
+    const starterValue = sumAssetValues(starterAssets);
+
+    return {
+      rosterKey: `pre-${roster.rosterId}`,
+      teamName: roster.teamName,
+      ownerName: roster.ownerName,
+      starterValue,
+      totalValue: starterValue + sumAssetValues(benchAssets),
+    } satisfies RosterValueSnapshot;
+  });
+  const resultingRosterValues: RosterValueSnapshot[] = resultingLeagueRosters.map(
     (roster) => {
       const starterAssets = roster.starters.map((starter) => starter.asset);
       const starterValue = sumAssetValues(starterAssets);
@@ -978,7 +995,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
         ownerName: roster.ownerName,
         starterValue,
         totalValue: starterValue + sumAssetValues(roster.benchAssets),
-      } satisfies ResultingRosterValue;
+      } satisfies RosterValueSnapshot;
     },
   );
 
@@ -1247,7 +1264,30 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
             </p>
           </div>
 
-          <ResultingRosterValueChart data={resultingRosterValues} />
+          <RosterValueChart
+            data={resultingRosterValues}
+            emptyStateMessage="No roster values are available for the simulated result."
+            ariaLabel="Chart of resulting roster values by team, showing starter value and whole roster value"
+          />
+        </div>
+
+        <div className={styles.panelSubsection}>
+          <div className={styles.panelHeader}>
+            <div>
+              <p className={styles.eyebrow}>Pre-draft values</p>
+              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
+            </div>
+            <p className={styles.panelNote}>
+              KTC value totals for each team before the simulated expansion draft.
+              Missing values count as 0.
+            </p>
+          </div>
+
+          <RosterValueChart
+            data={preDraftRosterValues}
+            emptyStateMessage="No roster values are available for the pre-draft view."
+            ariaLabel="Chart of pre-draft roster values by team, showing starter value and whole roster value"
+          />
         </div>
       </section>
     </section>

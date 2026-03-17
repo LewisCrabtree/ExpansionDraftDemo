@@ -822,8 +822,8 @@ export async function loadPlannerData(): Promise<PlannerData> {
         ? "KeepTradeCut CSV plus Sleeper search rank fallback"
         : "Sleeper search rank fallback",
     rankingNote: hasKtcRankings
-      ? `Local KeepTradeCut rankings are loaded from ${KTC_RANKINGS_FILE} by normalized player name. Players not found in the CSV fall back to Sleeper search_rank.`
-      : "No local KTC CSV was loaded, so the planner falls back to Sleeper search_rank.",
+      ? `KeepTradeCut rankings are loaded from the bundled ${KTC_RANKINGS_FILE} file by normalized player name. Players not found in the CSV fall back to Sleeper search_rank.`
+      : "No bundled KTC CSV was loaded, so the planner falls back to Sleeper search_rank.",
     links: {
       sleeperLeague: `https://sleeper.com/leagues/${snapshot.snapshot_meta.league_id}`,
       sleeperDocs: "https://docs.sleeper.com/",
