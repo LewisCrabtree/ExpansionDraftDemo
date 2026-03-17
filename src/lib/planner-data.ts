@@ -478,7 +478,14 @@ function isRookiePlayer(
     return false;
   }
 
-  return rookieYear >= currentSeason - 1 && (yearsExp == null || yearsExp <= 1);
+  if (rookieYear === currentSeason) {
+    return true;
+  }
+
+  // Sleeper offseason snapshots roll into the next league season before the current
+  // rookie class has logged a full NFL season, so first-year players can appear as
+  // rookie_year === currentSeason - 1 with years_exp === 1 and should stay excluded.
+  return rookieYear === currentSeason - 1 && yearsExp === 1;
 }
 
 function getTeamName(user: SnapshotUser | undefined): string {

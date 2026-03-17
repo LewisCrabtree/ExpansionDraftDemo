@@ -1303,8 +1303,8 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
               <h2 className={styles.panelTitle}>Projected selections</h2>
             </div>
             <p className={styles.panelNote}>
-              Best exposed non-rookie {assetLabel} are assigned by draft order while
-              respecting the single-team cap.
+              Best exposed players (excluding rookies) and picks are assigned by draft
+              order while respecting the single-team cap.
             </p>
           </div>
 

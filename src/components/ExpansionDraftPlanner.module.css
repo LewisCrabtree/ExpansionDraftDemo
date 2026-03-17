@@ -665,7 +665,7 @@
   }
 
   .expansionGrid {
-    min-width: 32.85rem;
+    min-width: calc(16rem * 2 + 0.85rem);
     grid-template-columns: repeat(2, minmax(16rem, 1fr));
   }
 
