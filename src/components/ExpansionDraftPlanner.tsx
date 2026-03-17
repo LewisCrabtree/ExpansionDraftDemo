@@ -24,6 +24,7 @@ type ProtectedRoster = PlannerRoster & {
   assets: PlannerPlayer[];
   keepers: PlannerPlayer[];
   exposed: PlannerPlayer[];
+  draftableExposed: PlannerPlayer[];
 };
 
 type ExpansionTeam = {
@@ -901,18 +902,23 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
     const assets = includeDraftPicks
       ? [...roster.players, ...roster.draftPicks].sort(comparePlayers)
       : roster.players;
+    const exposed = assets.slice(requestedKeepers);
+    const draftableExposed = exposed.filter(
+      (asset) => asset.assetType === "pick" || !asset.isRookie,
+    );
 
     return {
       ...roster,
       assets,
       keepers: assets.slice(0, requestedKeepers),
-      exposed: assets.slice(requestedKeepers),
+      exposed,
+      draftableExposed,
     };
   });
 
   const availablePool = protectedRosters
     .flatMap((roster) =>
-      roster.exposed.map(
+      roster.draftableExposed.map(
         (player) =>
           ({
             ...player,
@@ -924,19 +930,28 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
       ),
     )
     .sort(comparePlayers);
-  const freeAgentPool = data.freeAgents.map(
-    (player) =>
-      ({
-        ...player,
-        sourceRosterId: null,
-        sourceTeamName: "F/A",
-        sourceOwnerName: "Free agency",
-        sourceType: "freeAgent",
-      }) satisfies PoolAsset,
+  const freeAgentPool = data.freeAgents
+    .filter((player) => !player.isRookie)
+    .map(
+      (player) =>
+        ({
+          ...player,
+          sourceRosterId: null,
+          sourceTeamName: "F/A",
+          sourceOwnerName: "Free agency",
+          sourceType: "freeAgent",
+        }) satisfies PoolAsset,
+    );
+  const excludedRosterRookieCount = protectedRosters.reduce(
+    (total, roster) => total + (roster.exposed.length - roster.draftableExposed.length),
+    0,
   );
+  const excludedFreeAgentRookieCount = data.freeAgents.length - freeAgentPool.length;
+  const excludedRookieCount =
+    excludedRosterRookieCount + (includeFreeAgents ? excludedFreeAgentRookieCount : 0);
 
   const draftableAssetLimit = protectedRosters.reduce(
-    (total, roster) => total + Math.min(roster.exposed.length, sourceTeamSelectionCap),
+    (total, roster) => total + Math.min(roster.draftableExposed.length, sourceTeamSelectionCap),
     0,
   );
   const activeDraftPoolCount =
@@ -1151,9 +1166,17 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
 
           <article className={styles.metricCard}>
             <span className={styles.metricLabel}>Still available</span>
-            <strong className={styles.metricValue}>{remainingAssetCount}</strong>
-          </article>
-        </div>
+              <strong className={styles.metricValue}>{remainingAssetCount}</strong>
+            </article>
+          </div>
+
+        {excludedRookieCount > 0 ? (
+          <p className={styles.constraintNote}>
+            Rookie players are excluded from expansion selections, removing{" "}
+            {excludedRookieCount} player{excludedRookieCount === 1 ? "" : "s"} from the
+            available pool.
+          </p>
+        ) : null}
 
         {hasConstrainedDraft ? (
           <p className={styles.constraintNote}>
@@ -1280,35 +1303,37 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
               <h2 className={styles.panelTitle}>Projected selections</h2>
             </div>
             <p className={styles.panelNote}>
-              Best exposed {assetLabel} are assigned by draft order while respecting
-              the single-team cap.
+              Best exposed non-rookie {assetLabel} are assigned by draft order while
+              respecting the single-team cap.
             </p>
           </div>
 
-          <div className={styles.expansionGrid}>
-            {expansionTeams.map((team) => (
-              <article key={team.name} className={styles.expansionCard}>
-                <div className={styles.expansionHeader}>
-                  <h3>{team.name}</h3>
-                  <span>{team.picks.length} picks</span>
-                </div>
+          <div className={styles.expansionScroller}>
+            <div className={styles.expansionGrid}>
+              {expansionTeams.map((team) => (
+                <article key={team.name} className={styles.expansionCard}>
+                  <div className={styles.expansionHeader}>
+                    <h3>{team.name}</h3>
+                    <span>{team.picks.length} picks</span>
+                  </div>
 
-                <div className={styles.playerList}>
-                  {team.picks.length > 0 ? (
-                    team.picks.map((pick) => (
-                      <PlayerCard
-                        key={`${team.name}-${pick.playerId}-${pick.overallPick}`}
-                        player={pick}
-                        prefix={`${pick.overallPick}.`}
-                        secondaryLine={`From ${pick.sourceTeamName}`}
-                      />
-                    ))
-                  ) : (
-                    <div className={styles.emptyState}>No selections at this setting.</div>
-                  )}
-                </div>
-              </article>
-            ))}
+                  <div className={styles.playerList}>
+                    {team.picks.length > 0 ? (
+                      team.picks.map((pick) => (
+                        <PlayerCard
+                          key={`${team.name}-${pick.playerId}-${pick.overallPick}`}
+                          player={pick}
+                          prefix={`${pick.overallPick}.`}
+                          secondaryLine={`From ${pick.sourceTeamName}`}
+                        />
+                      ))
+                    ) : (
+                      <div className={styles.emptyState}>No selections at this setting.</div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
       </div>
@@ -1327,10 +1352,12 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
           </p>
         </div>
 
-        <div className={styles.rosterGrid}>
-          {resultingLeagueRosters.map((roster) => (
-            <ResultingRosterCard key={roster.rosterKey} roster={roster} />
-          ))}
+        <div className={styles.rosterScroller}>
+          <div className={styles.rosterGrid}>
+            {resultingLeagueRosters.map((roster) => (
+              <ResultingRosterCard key={roster.rosterKey} roster={roster} />
+            ))}
+          </div>
         </div>
       </section>
     </section>

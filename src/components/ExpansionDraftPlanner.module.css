@@ -338,6 +338,13 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.expansionScroller,
+.rosterScroller {
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+}
+
 .expansionCard {
   display: grid;
   gap: 0.75rem;
@@ -640,8 +647,7 @@
 }
 
 @media (max-width: 960px) {
-  .metricsGrid,
-  .expansionGrid {
+  .metricsGrid {
     grid-template-columns: 1fr;
   }
 
@@ -656,5 +662,27 @@
 
   .rosterBody {
     max-height: none;
+  }
+
+  .expansionGrid {
+    min-width: 32.85rem;
+    grid-template-columns: repeat(2, minmax(16rem, 1fr));
+  }
+
+  .rosterGrid {
+    grid-auto-columns: minmax(16rem, 1fr);
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    min-width: max-content;
+  }
+
+  .expansionCard,
+  .rosterCard {
+    scroll-snap-align: start;
+  }
+
+  .expansionScroller,
+  .rosterScroller {
+    scroll-snap-type: x proximity;
   }
 }
