@@ -112,7 +112,7 @@ export type PlannerPlayer = {
   isStarter: boolean;
   isTaxi: boolean;
   isReserve: boolean;
-  isRookie: boolean;
+  isUndraftedRookie: boolean;
   injuryStatus: string | null;
   assetType: "player" | "pick";
   pickSeason: string | null;
@@ -467,25 +467,31 @@ function resolveSnapshotPlayer(
   return positionMatch.length === 1 ? positionMatch[0] : null;
 }
 
-function isRookiePlayer(
+function isUndraftedRookiePlayer(
   player: SnapshotPlayer | null | undefined,
   currentSeason: number | null,
 ) {
   const rookieYear = asNumber(asRecord(player?.metadata).rookie_year);
-  const yearsExp = asNumber(player?.years_exp);
 
   if (rookieYear == null || currentSeason == null) {
     return false;
   }
 
-  if (rookieYear === currentSeason) {
+  return rookieYear === currentSeason;
+}
+
+function isUndraftedRookieRanking(
+  ranking: KtcRanking,
+  player: SnapshotPlayer | null | undefined,
+  currentSeason: number | null,
+) {
+  if (isUndraftedRookiePlayer(player, currentSeason)) {
     return true;
   }
 
-  // Sleeper offseason snapshots roll into the next league season before the current
-  // rookie class has logged a full NFL season, so first-year players can appear as
-  // rookie_year === currentSeason - 1 with years_exp === 1 and should stay excluded.
-  return rookieYear === currentSeason - 1 && yearsExp === 1;
+  // KTC prospect rows use the synthetic RFA team code until those players are
+  // drafted into the NFL/Sleeper player pool, so they should stay tied to rookie picks.
+  return ranking.team === "RFA";
 }
 
 function getTeamName(user: SnapshotUser | undefined): string {
@@ -745,7 +751,7 @@ export async function loadPlannerData(): Promise<PlannerData> {
           isStarter: false,
           isTaxi: false,
           isReserve: false,
-          isRookie: false,
+          isUndraftedRookie: false,
           injuryStatus: null,
           assetType: "pick",
           pickSeason: currentDraftSeason,
@@ -813,7 +819,7 @@ export async function loadPlannerData(): Promise<PlannerData> {
             isStarter: starters.has(playerId),
             isTaxi: taxi.has(playerId),
             isReserve: reserve.has(playerId),
-            isRookie: isRookiePlayer(player, currentSeason),
+            isUndraftedRookie: isUndraftedRookiePlayer(player, currentSeason),
             injuryStatus: asString(player?.injury_status),
             assetType: "player",
             pickSeason: null,
@@ -842,9 +848,15 @@ export async function loadPlannerData(): Promise<PlannerData> {
       (ranking) =>
         ranking.position !== "PICK" && !usedKtcRowIds.has(ranking.rowId),
     )
-    .map(
-      (ranking) =>
-        ({
+    .map((ranking) => {
+      const snapshotPlayer = resolveSnapshotPlayer(
+        ranking.playerName,
+        ranking.team,
+        ranking.position,
+        snapshotPlayersByName,
+      );
+
+      return ({
           playerId: `fa-${ranking.rowId}`,
           fullName: ranking.playerName,
           position: ranking.position ?? "UNK",
@@ -853,28 +865,24 @@ export async function loadPlannerData(): Promise<PlannerData> {
           rank: ranking.rank,
           rankDisplay: `#${ranking.rank.toLocaleString()}`,
           rankSource: `KeepTradeCut CSV: ${KTC_RANKINGS_FILE}`,
-           value: ranking.value,
-           isStarter: false,
-           isTaxi: false,
-           isReserve: false,
-           isRookie: isRookiePlayer(
-             resolveSnapshotPlayer(
-               ranking.playerName,
-               ranking.team,
-               ranking.position,
-               snapshotPlayersByName,
-             ),
-             currentSeason,
-           ),
-           injuryStatus: null,
-           assetType: "player",
-           pickSeason: null,
+          value: ranking.value,
+          isStarter: false,
+          isTaxi: false,
+          isReserve: false,
+          isUndraftedRookie: isUndraftedRookieRanking(
+            ranking,
+            snapshotPlayer,
+            currentSeason,
+          ),
+          injuryStatus: null,
+          assetType: "player",
+          pickSeason: null,
           pickRound: null,
           pickSlot: null,
           pickTier: null,
           pickOriginalRosterId: null,
-        }) satisfies PlannerPlayer,
-    )
+        }) satisfies PlannerPlayer;
+    })
     .sort(comparePlayers);
 
   const maxRosterSize = rosters.reduce(

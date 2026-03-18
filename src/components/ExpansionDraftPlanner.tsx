@@ -904,7 +904,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
       : roster.players;
     const exposed = assets.slice(requestedKeepers);
     const draftableExposed = exposed.filter(
-      (asset) => asset.assetType === "pick" || !asset.isRookie,
+      (asset) => asset.assetType === "pick" || !asset.isUndraftedRookie,
     );
 
     return {
@@ -931,7 +931,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
     )
     .sort(comparePlayers);
   const freeAgentPool = data.freeAgents
-    .filter((player) => !player.isRookie)
+    .filter((player) => !player.isUndraftedRookie)
     .map(
       (player) =>
         ({
@@ -942,13 +942,15 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
           sourceType: "freeAgent",
         }) satisfies PoolAsset,
     );
-  const excludedRosterRookieCount = protectedRosters.reduce(
+  const excludedRosterUndraftedRookieCount = protectedRosters.reduce(
     (total, roster) => total + (roster.exposed.length - roster.draftableExposed.length),
     0,
   );
-  const excludedFreeAgentRookieCount = data.freeAgents.length - freeAgentPool.length;
-  const excludedRookieCount =
-    excludedRosterRookieCount + (includeFreeAgents ? excludedFreeAgentRookieCount : 0);
+  const excludedFreeAgentUndraftedRookieCount =
+    data.freeAgents.length - freeAgentPool.length;
+  const excludedUndraftedRookieCount =
+    excludedRosterUndraftedRookieCount +
+    (includeFreeAgents ? excludedFreeAgentUndraftedRookieCount : 0);
 
   const draftableAssetLimit = protectedRosters.reduce(
     (total, roster) => total + Math.min(roster.draftableExposed.length, sourceTeamSelectionCap),
@@ -1170,11 +1172,11 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
             </article>
           </div>
 
-        {excludedRookieCount > 0 ? (
+        {excludedUndraftedRookieCount > 0 ? (
           <p className={styles.constraintNote}>
-            Rookie players are excluded from expansion selections, removing{" "}
-            {excludedRookieCount} player{excludedRookieCount === 1 ? "" : "s"} from the
-            available pool.
+            Undrafted rookies are excluded from expansion selections, removing{" "}
+            {excludedUndraftedRookieCount} player
+            {excludedUndraftedRookieCount === 1 ? "" : "s"} from the available pool.
           </p>
         ) : null}
 
@@ -1303,8 +1305,9 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
               <h2 className={styles.panelTitle}>Projected selections</h2>
             </div>
             <p className={styles.panelNote}>
-              Best exposed players (excluding rookies) and picks are assigned by draft
-              order while respecting the single-team cap.
+              Best exposed players, veteran free agents, and picks are assigned by
+              draft order while excluding undrafted rookies and respecting the
+              single-team cap.
             </p>
           </div>
 
