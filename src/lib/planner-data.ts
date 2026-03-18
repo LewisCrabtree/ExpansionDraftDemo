@@ -38,6 +38,8 @@ type SnapshotPlayer = JsonObject & {
   team?: string | null;
   search_rank?: number | string | null;
   injury_status?: string | null;
+  years_exp?: number | string | null;
+  metadata?: JsonObject | null;
 };
 
 type SnapshotTradedPick = JsonObject & {
@@ -110,6 +112,7 @@ export type PlannerPlayer = {
   isStarter: boolean;
   isTaxi: boolean;
   isReserve: boolean;
+  isRookie: boolean;
   injuryStatus: string | null;
   assetType: "player" | "pick";
   pickSeason: string | null;
@@ -399,6 +402,92 @@ function resolveKtcRanking(
   return positionMatch.length === 1 ? positionMatch[0] : null;
 }
 
+function buildSnapshotPlayersByName(players: LeagueSnapshot["players"]) {
+  const playersByName = new Map<string, SnapshotPlayer[]>();
+
+  Object.values(players).forEach((player) => {
+    if (!player) {
+      return;
+    }
+
+    const playerName = getPlayerName("", player);
+    const key = normalizePlayerName(playerName);
+
+    if (!key) {
+      return;
+    }
+
+    const existing = playersByName.get(key) ?? [];
+    existing.push(player);
+    playersByName.set(key, existing);
+  });
+
+  return playersByName;
+}
+
+function resolveSnapshotPlayer(
+  playerName: string,
+  team: string | null,
+  position: string | null,
+  playersByName: Map<string, SnapshotPlayer[]>,
+) {
+  const candidates = playersByName.get(normalizePlayerName(playerName)) ?? [];
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  if (candidates.length === 1) {
+    return candidates[0];
+  }
+
+  const normalizedTeam = normalizeTeamCode(team);
+  const normalizedPosition = normalizePosition(position);
+  const exactMatch = candidates.filter(
+    (candidate) =>
+      (normalizedTeam == null ||
+        normalizeTeamCode(asString(candidate.team)) == null ||
+        normalizeTeamCode(asString(candidate.team)) === normalizedTeam) &&
+      (normalizedPosition == null ||
+        normalizePosition(getPlayerPosition(candidate)) == null ||
+        normalizePosition(getPlayerPosition(candidate)) === normalizedPosition),
+  );
+
+  if (exactMatch.length === 1) {
+    return exactMatch[0];
+  }
+
+  const positionMatch = candidates.filter(
+    (candidate) =>
+      normalizedPosition == null ||
+      normalizePosition(getPlayerPosition(candidate)) == null ||
+      normalizePosition(getPlayerPosition(candidate)) === normalizedPosition,
+  );
+
+  return positionMatch.length === 1 ? positionMatch[0] : null;
+}
+
+function isRookiePlayer(
+  player: SnapshotPlayer | null | undefined,
+  currentSeason: number | null,
+) {
+  const rookieYear = asNumber(asRecord(player?.metadata).rookie_year);
+  const yearsExp = asNumber(player?.years_exp);
+
+  if (rookieYear == null || currentSeason == null) {
+    return false;
+  }
+
+  if (rookieYear === currentSeason) {
+    return true;
+  }
+
+  // Sleeper offseason snapshots roll into the next league season before the current
+  // rookie class has logged a full NFL season, so first-year players can appear as
+  // rookie_year === currentSeason - 1 with years_exp === 1 and should stay excluded.
+  return rookieYear === currentSeason - 1 && yearsExp === 1;
+}
+
 function getTeamName(user: SnapshotUser | undefined): string {
   const metadata = asRecord(user?.metadata);
   return (
@@ -564,11 +653,13 @@ export async function loadPlannerData(): Promise<PlannerData> {
   const currentDraft = getCurrentDraft(snapshot);
   const currentDraftSeason =
     asString(currentDraft?.season) ?? snapshot.snapshot_meta.season;
+  const currentSeason = asNumber(currentDraftSeason) ?? asNumber(snapshot.snapshot_meta.season);
   const currentDraftRounds =
     asNumber(asRecord(currentDraft?.settings).rounds) ??
     asNumber(asRecord(snapshot.league.settings).draft_rounds) ??
     0;
   const draftSlotsByRosterId = getDraftSlotsByRosterId(snapshot, currentDraft);
+  const snapshotPlayersByName = buildSnapshotPlayersByName(snapshot.players);
   const tradedPicks = snapshot.traded_picks ?? [];
   const ownerByDraftPickKey = new Map<string, number>();
   const draftPicksByRosterId = new Map<number, PlannerPlayer[]>();
@@ -654,6 +745,7 @@ export async function loadPlannerData(): Promise<PlannerData> {
           isStarter: false,
           isTaxi: false,
           isReserve: false,
+          isRookie: false,
           injuryStatus: null,
           assetType: "pick",
           pickSeason: currentDraftSeason,
@@ -721,6 +813,7 @@ export async function loadPlannerData(): Promise<PlannerData> {
             isStarter: starters.has(playerId),
             isTaxi: taxi.has(playerId),
             isReserve: reserve.has(playerId),
+            isRookie: isRookiePlayer(player, currentSeason),
             injuryStatus: asString(player?.injury_status),
             assetType: "player",
             pickSeason: null,
@@ -760,13 +853,22 @@ export async function loadPlannerData(): Promise<PlannerData> {
           rank: ranking.rank,
           rankDisplay: `#${ranking.rank.toLocaleString()}`,
           rankSource: `KeepTradeCut CSV: ${KTC_RANKINGS_FILE}`,
-          value: ranking.value,
-          isStarter: false,
-          isTaxi: false,
-          isReserve: false,
-          injuryStatus: null,
-          assetType: "player",
-          pickSeason: null,
+           value: ranking.value,
+           isStarter: false,
+           isTaxi: false,
+           isReserve: false,
+           isRookie: isRookiePlayer(
+             resolveSnapshotPlayer(
+               ranking.playerName,
+               ranking.team,
+               ranking.position,
+               snapshotPlayersByName,
+             ),
+             currentSeason,
+           ),
+           injuryStatus: null,
+           assetType: "player",
+           pickSeason: null,
           pickRound: null,
           pickSlot: null,
           pickTier: null,
