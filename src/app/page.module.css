@@ -10,6 +10,72 @@
   gap: 1.2rem;
 }
 
+.topNav,
+.leagueStatsSection {
+  scroll-margin-top: 1rem;
+}
+
+.topNav {
+  background: rgba(247, 239, 231, 0.78);
+  border: 1px solid rgba(16, 34, 42, 0.12);
+  border-radius: 1.35rem;
+  box-shadow: 0 18px 40px rgba(18, 28, 31, 0.08);
+  overflow: hidden;
+}
+
+.topNavToggle {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.95rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+
+.topNavToggle::-webkit-details-marker {
+  display: none;
+}
+
+.topNav[open] .topNavToggle {
+  border-bottom: 1px solid rgba(16, 34, 42, 0.08);
+}
+
+.topNavMenu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  padding: 0.95rem 1.1rem 1.05rem;
+}
+
+.topNavLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 11rem;
+  border-radius: 999px;
+  padding: 0.68rem 0.95rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(16, 34, 42, 0.12);
+  color: var(--foreground);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.topNavLink:hover {
+  transform: translateY(-1px);
+  border-color: rgba(182, 92, 50, 0.35);
+  background: #fff;
+}
+
+.leagueStatsSection {
+  display: grid;
+  gap: 1.2rem;
+}
+
 .hero {
   display: grid;
   gap: 1.1rem;
@@ -179,6 +245,24 @@
 
   .shell {
     gap: 1rem;
+  }
+
+  .topNavToggle {
+    padding: 0.85rem 0.95rem;
+    font-size: 0.74rem;
+  }
+
+  .topNavMenu {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.8rem 0.95rem 0.95rem;
+  }
+
+  .topNavLink {
+    width: 100%;
+    min-width: 0;
+    padding: 0.62rem 0.82rem;
+    font-size: 0.8rem;
   }
 
   .hero,

@@ -893,7 +893,7 @@ export async function loadPlannerData(): Promise<PlannerData> {
     (total, roster) => total + roster.players.length,
     0,
   );
-  const defaultKeepers = Math.min(10, maxRosterSize);
+  const defaultKeepers = Math.min(11, maxRosterSize);
   const defaultSelectionsPerExpansionTeam = Math.min(
     12,
     Math.max(1, Math.floor(totalPlayerCount / 8)),

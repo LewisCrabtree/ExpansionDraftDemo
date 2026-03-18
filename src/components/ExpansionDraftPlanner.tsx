@@ -866,10 +866,10 @@ function ResultingRosterCard({ roster }: { roster: ResultingLeagueRoster }) {
 
 export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
   const [keepersPerTeam, setKeepersPerTeam] = useState(
-    clamp(8, KEEPERS_RANGE.min, KEEPERS_RANGE.max),
+    clamp(data.defaultKeepers, KEEPERS_RANGE.min, KEEPERS_RANGE.max),
   );
   const [maxSelectionsFromSingleTeam, setMaxSelectionsFromSingleTeam] = useState<number>(
-    SOURCE_TEAM_CAP_RANGE.max,
+    clamp(4, SOURCE_TEAM_CAP_RANGE.min, SOURCE_TEAM_CAP_RANGE.max),
   );
   const [includeDraftPicks, setIncludeDraftPicks] = useState(true);
   const [includeFreeAgents, setIncludeFreeAgents] = useState(true);
