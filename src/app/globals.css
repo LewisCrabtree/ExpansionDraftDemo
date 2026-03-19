@@ -7,6 +7,8 @@
   --border: rgba(17, 34, 41, 0.12);
   --accent: #b65c32;
   --accent-secondary: #1f5b52;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
