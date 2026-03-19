@@ -857,11 +857,6 @@ function RosterValueChart({
                 tone="roster"
               />
 
-              {item.preTotalValue == null ? (
-                <p className={styles.chartComparisonNote}>
-                  New franchise: pre-draft baseline is zero.
-                </p>
-              ) : null}
             </article>
           );
         })}
@@ -1250,16 +1245,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
             <p className={styles.eyebrow}>Roster values</p>
             <h2 className={styles.panelTitle}>Strength board before and after</h2>
           </div>
-          <p className={styles.panelNote}>
-            Compare each roster&apos;s pre-draft faded bars against post-draft solid overlays in
-            one merged view for starters and full roster value.
-          </p>
         </div>
-
-        <p className={styles.mobileHint}>
-          Each team now keeps its pre-draft and post-draft starter and roster totals in the
-          same compact card.
-        </p>
 
         <RosterValueChart
           data={viewModel.combinedRosterValues}
@@ -1274,11 +1260,6 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
             <p className={styles.eyebrow}>Projected selections</p>
             <h2 className={styles.panelTitle}>Expansion draft board</h2>
           </div>
-          <p className={styles.panelNote}>
-            Best exposed players, veteran free agents, and picks are assigned by
-            draft order while excluding undrafted rookies and respecting the
-            single-team cap.
-          </p>
         </div>
 
         <div className={styles.summaryGrid}>
@@ -1298,8 +1279,6 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
           })}
         </div>
 
-        <p className={styles.mobileHint}>Swipe sideways to compare each expansion team.</p>
-
         <div className={styles.expansionScroller}>
           <div className={styles.expansionGrid}>
             {viewModel.expansionTeams.map((team) => {
@@ -1308,10 +1287,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
               return (
                 <article key={team.name} id={anchorId} className={styles.expansionCard}>
                   <div className={styles.expansionHeader}>
-                    <div>
-                      <h3>{team.name}</h3>
-                      <p className={styles.expansionSubhead}>Projected draft board</p>
-                    </div>
+                    <h3>{team.name}</h3>
                     <div className={styles.expansionMeta}>
                       <span>{team.picks.length} picks</span>
                       <span>{formatCompactNumber(sumAssetValues(team.picks))} value</span>
@@ -1347,10 +1323,6 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
               Resulting {viewModel.orderedResultingLeagueRosters.length}-team league rosters
             </h2>
           </div>
-          <p className={styles.panelNote}>
-            Expansion teams appear first so the new franchises are easier to inspect
-            before paging through the rest of the league.
-          </p>
         </div>
 
         <div className={styles.jumpRail}>
@@ -1373,8 +1345,6 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
           })}
         </div>
 
-        <p className={styles.mobileHint}>Swipe sideways to compare rosters one card at a time.</p>
-
         <div className={styles.rosterScroller}>
           <div className={styles.rosterGrid}>
             {viewModel.orderedResultingLeagueRosters.map((roster) => (
@@ -1394,15 +1364,7 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
             <p className={styles.eyebrow}>Protected rosters</p>
             <h2 className={styles.panelTitle}>Keepers by team</h2>
           </div>
-          <p className={styles.panelNote}>
-            This remains the full comparison table. Use it when you need the exact
-            protected board team-by-team.
-          </p>
         </div>
-
-        <p className={styles.mobileHint}>
-          Swipe across the table to compare team columns while the slot column stays pinned.
-        </p>
 
         <div className={styles.tableScroller}>
           <table className={styles.keepersTable}>
