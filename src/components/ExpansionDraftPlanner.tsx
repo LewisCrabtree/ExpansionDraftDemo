@@ -1,6 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import {
+  startTransition,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 
 import type { PlannerData, PlannerPlayer, PlannerRoster } from "@/lib/planner-data";
 
@@ -32,14 +39,6 @@ type ExpansionTeam = {
   picks: ExpansionPick[];
 };
 
-type TeamDraftImpact = {
-  rosterId: number;
-  teamName: string;
-  ownerName: string;
-  assetsTaken: number;
-  totalValueTaken: number;
-};
-
 type RosterValueSnapshot = {
   rosterKey: string;
   teamName: string;
@@ -48,11 +47,20 @@ type RosterValueSnapshot = {
   totalValue: number;
 };
 
+type CombinedRosterValueSnapshot = {
+  rosterKey: string;
+  teamName: string;
+  ownerName: string;
+  isExpansion: boolean;
+  preStarterValue: number | null;
+  preTotalValue: number | null;
+  postStarterValue: number;
+  postTotalValue: number;
+};
+
 type DraftSimulation = {
   expansionTeams: ExpansionTeam[];
   selectedAssetIds: Set<string>;
-  sourceRosterSelectionCounts: Map<number, number>;
-  sourceRosterValueTaken: Map<number, number>;
 };
 
 type SimulationSettings = {
@@ -61,6 +69,25 @@ type SimulationSettings = {
   sourceTeamSelectionCap: number;
   includeFreeAgents: boolean;
 };
+
+type PlannerSettings = {
+  requestedKeepers: number;
+  sourceTeamSelectionCap: number;
+};
+
+type PlannerSettingsAction =
+  | {
+      type: "setRequestedKeepers";
+      value: number;
+    }
+  | {
+      type: "setSourceTeamSelectionCap";
+      value: number;
+    }
+  | {
+      type: "setSettings";
+      value: PlannerSettings;
+    };
 
 type LineupSlotAssignment = {
   slot: string;
@@ -75,6 +102,29 @@ type ResultingLeagueRoster = {
   starters: LineupSlotAssignment[];
   benchAssets: PlannerPlayer[];
   isExpansion: boolean;
+};
+
+type PlannerViewModel = {
+  combinedRosterValues: CombinedRosterValueSnapshot[];
+  expansionTeams: ExpansionTeam[];
+  orderedResultingLeagueRosters: ResultingLeagueRoster[];
+  protectedRosters: ProtectedRoster[];
+};
+
+type PreparedRoster = PlannerRoster & {
+  preDraftStarterValue: number;
+  preDraftTotalValue: number;
+  sortedAssets: PlannerPlayer[];
+};
+
+type PreparedPlannerData = {
+  freeAgentPool: PoolAsset[];
+  preparedRosters: PreparedRoster[];
+  preDraftRosterValueByKey: Map<
+    string,
+    Pick<RosterValueSnapshot, "starterValue" | "totalValue">
+  >;
+  starterSlots: string[];
 };
 
 const KEEPERS_RANGE = {
@@ -94,6 +144,10 @@ const SOURCE_TEAM_CAP_RANGE = {
 
 const EXPANSION_TEAM_NAMES = ["Expansion A", "Expansion B"] as const;
 const BENCH_SLOT_NAMES = new Set(["BN", "BENCH", "IR", "RESERVE", "TAXI"]);
+const FLEX_SLOT_NAMES = new Set(["FLEX", "W_R_T"]);
+const SUPER_FLEX_SLOT_NAMES = new Set(["SUPER_FLEX", "SUPERFLEX"]);
+const FLEX_ELIGIBLE_POSITIONS: readonly string[] = ["RB", "WR", "TE"];
+const SUPER_FLEX_ELIGIBLE_POSITIONS: readonly string[] = ["QB", "RB", "WR", "TE"];
 
 const compactNumberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -106,6 +160,10 @@ function comparePlayers(left: PlannerPlayer, right: PlannerPlayer) {
     Number(right.isStarter) - Number(left.isStarter) ||
     left.fullName.localeCompare(right.fullName)
   );
+}
+
+function compareLineupCandidates(left: PlannerPlayer, right: PlannerPlayer) {
+  return (right.value ?? 0) - (left.value ?? 0) || comparePlayers(left, right);
 }
 
 function getTeamIndexForPick(pickIndex: number, draftMode: DraftMode) {
@@ -121,6 +179,67 @@ function getTeamIndexForPick(pickIndex: number, draftMode: DraftMode) {
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
+}
+
+function createInitialPlannerSettings(data: PlannerData): PlannerSettings {
+  return {
+    requestedKeepers: clamp(data.defaultKeepers, KEEPERS_RANGE.min, KEEPERS_RANGE.max),
+    sourceTeamSelectionCap: clamp(4, SOURCE_TEAM_CAP_RANGE.min, SOURCE_TEAM_CAP_RANGE.max),
+  };
+}
+
+function plannerSettingsReducer(
+  state: PlannerSettings,
+  action: PlannerSettingsAction,
+): PlannerSettings {
+  switch (action.type) {
+    case "setRequestedKeepers": {
+      const requestedKeepers = clamp(action.value, KEEPERS_RANGE.min, KEEPERS_RANGE.max);
+
+      return requestedKeepers === state.requestedKeepers
+        ? state
+        : {
+            ...state,
+            requestedKeepers,
+          };
+    }
+    case "setSourceTeamSelectionCap": {
+      const sourceTeamSelectionCap = clamp(
+        action.value,
+        SOURCE_TEAM_CAP_RANGE.min,
+        SOURCE_TEAM_CAP_RANGE.max,
+      );
+
+      return sourceTeamSelectionCap === state.sourceTeamSelectionCap
+        ? state
+        : {
+            ...state,
+            sourceTeamSelectionCap,
+          };
+    }
+    case "setSettings": {
+      const requestedKeepers = clamp(
+        action.value.requestedKeepers,
+        KEEPERS_RANGE.min,
+        KEEPERS_RANGE.max,
+      );
+      const sourceTeamSelectionCap = clamp(
+        action.value.sourceTeamSelectionCap,
+        SOURCE_TEAM_CAP_RANGE.min,
+        SOURCE_TEAM_CAP_RANGE.max,
+      );
+
+      return requestedKeepers === state.requestedKeepers &&
+        sourceTeamSelectionCap === state.sourceTeamSelectionCap
+        ? state
+        : {
+            requestedKeepers,
+            sourceTeamSelectionCap,
+          };
+    }
+    default:
+      return state;
+  }
 }
 
 function formatOrdinal(value: number) {
@@ -210,8 +329,8 @@ function sumAssetValues(assets: Array<PlannerPlayer | null>) {
   return assets.reduce((total, asset) => total + (asset?.value ?? 0), 0);
 }
 
-function shortenTeamLabel(teamName: string) {
-  return teamName.length > 16 ? `${teamName.slice(0, 15)}...` : teamName;
+function toAnchorId(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 function getStarterSlots(rosterPositions: string[]) {
@@ -224,17 +343,67 @@ function canAssetFillSlot(asset: PlannerPlayer, slot: string) {
   }
 
   const normalizedSlot = normalizeSlot(slot);
-  const position = asset.position.toUpperCase();
+  const position = normalizeSlot(asset.position);
 
-  if (normalizedSlot === "FLEX" || normalizedSlot === "W_R_T") {
-    return ["RB", "WR", "TE"].includes(position);
+  if (FLEX_SLOT_NAMES.has(normalizedSlot)) {
+    return FLEX_ELIGIBLE_POSITIONS.includes(position);
   }
 
-  if (normalizedSlot === "SUPER_FLEX" || normalizedSlot === "SUPERFLEX") {
-    return ["QB", "RB", "WR", "TE"].includes(position);
+  if (SUPER_FLEX_SLOT_NAMES.has(normalizedSlot)) {
+    return SUPER_FLEX_ELIGIBLE_POSITIONS.includes(position);
   }
 
   return position === normalizedSlot;
+}
+
+function getExactSlotFillPriority(slot: string) {
+  switch (slot) {
+    case "QB":
+      return 0;
+    case "RB":
+      return 1;
+    case "WR":
+      return 2;
+    case "TE":
+      return 3;
+    default:
+      return 4;
+  }
+}
+
+function takeBestAvailableAsset(
+  availablePlayersByPosition: Map<string, PlannerPlayer[]>,
+  eligiblePositions: readonly string[],
+): PlannerPlayer | null {
+  let bestPosition: string | null = null;
+  let bestAsset: PlannerPlayer | null = null;
+
+  eligiblePositions.forEach((position) => {
+    const candidate = availablePlayersByPosition.get(position)?.[0];
+
+    if (!candidate) {
+      return;
+    }
+
+    if (!bestAsset || compareLineupCandidates(candidate, bestAsset) < 0) {
+      bestAsset = candidate;
+      bestPosition = position;
+    }
+  });
+
+  if (!bestAsset || !bestPosition) {
+    return null;
+  }
+
+  const positionBucket = availablePlayersByPosition.get(bestPosition);
+
+  if (!positionBucket) {
+    return null;
+  }
+
+  positionBucket.shift();
+
+  return bestAsset;
 }
 
 function buildLineup(
@@ -245,22 +414,106 @@ function buildLineup(
   benchAssets: PlannerPlayer[];
 } {
   const assignedAssetIds = new Set<string>();
+  const starters = starterSlots.map((slot) => ({
+    slot,
+    asset: null as PlannerPlayer | null,
+  }));
   const playerAssets = assets.filter((asset) => asset.assetType === "player");
-  const starters = starterSlots.map((slot) => {
-    const asset =
-      playerAssets.find(
-        (candidate) =>
-          !assignedAssetIds.has(candidate.playerId) && canAssetFillSlot(candidate, slot),
-      ) ?? null;
 
-    if (asset) {
-      assignedAssetIds.add(asset.playerId);
+  if (starterSlots.length === 0 || playerAssets.length === 0) {
+    return {
+      starters,
+      benchAssets: assets,
+    };
+  }
+
+  const availablePlayersByPosition = new Map<string, PlannerPlayer[]>();
+
+  playerAssets.forEach((asset) => {
+    const position = normalizeSlot(asset.position);
+    const positionBucket = availablePlayersByPosition.get(position);
+
+    if (positionBucket) {
+      positionBucket.push(asset);
+      return;
     }
 
-    return {
-      slot,
-      asset,
-    };
+    availablePlayersByPosition.set(position, [asset]);
+  });
+
+  availablePlayersByPosition.forEach((positionBucket) => {
+    positionBucket.sort(compareLineupCandidates);
+  });
+
+  const indexedStarterSlots = starterSlots.map((slot, index) => ({
+    index,
+    normalizedSlot: normalizeSlot(slot),
+  }));
+  const exactSlots = indexedStarterSlots
+    .filter(
+      ({ normalizedSlot }) =>
+        !FLEX_SLOT_NAMES.has(normalizedSlot) && !SUPER_FLEX_SLOT_NAMES.has(normalizedSlot),
+    )
+    .sort(
+      (left, right) =>
+        getExactSlotFillPriority(left.normalizedSlot) -
+          getExactSlotFillPriority(right.normalizedSlot) || left.index - right.index,
+    );
+
+  exactSlots.forEach(({ index, normalizedSlot }) => {
+    const asset = takeBestAvailableAsset(availablePlayersByPosition, [normalizedSlot]);
+
+    if (!asset) {
+      return;
+    }
+
+    if (!canAssetFillSlot(asset, starterSlots[index])) {
+      return;
+    }
+
+    starters[index].asset = asset;
+    assignedAssetIds.add(asset.playerId);
+  });
+
+  indexedStarterSlots.forEach(({ index, normalizedSlot }) => {
+    if (!FLEX_SLOT_NAMES.has(normalizedSlot)) {
+      return;
+    }
+
+    const asset = takeBestAvailableAsset(availablePlayersByPosition, FLEX_ELIGIBLE_POSITIONS);
+
+    if (!asset) {
+      return;
+    }
+
+    if (!canAssetFillSlot(asset, starterSlots[index])) {
+      return;
+    }
+
+    starters[index].asset = asset;
+    assignedAssetIds.add(asset.playerId);
+  });
+
+  indexedStarterSlots.forEach(({ index, normalizedSlot }) => {
+    if (!SUPER_FLEX_SLOT_NAMES.has(normalizedSlot)) {
+      return;
+    }
+
+    const asset = takeBestAvailableAsset(
+      availablePlayersByPosition,
+      SUPER_FLEX_ELIGIBLE_POSITIONS,
+    );
+
+    if (!asset) {
+      return;
+    }
+
+    if (!canAssetFillSlot(asset, starterSlots[index])) {
+      return;
+    }
+
+    starters[index].asset = asset;
+    assignedAssetIds.add(asset.playerId);
   });
 
   return {
@@ -284,7 +537,6 @@ function simulateExpansionDraft({
   }));
   const selectedAssetIds = new Set<string>();
   const sourceRosterSelectionCounts = new Map<number, number>();
-  const sourceRosterValueTaken = new Map<number, number>();
   const totalRequestedPicks =
     settings.requestedSelectionsPerExpansionTeam * EXPANSION_TEAM_NAMES.length;
 
@@ -340,11 +592,6 @@ function simulateExpansionDraft({
         asset.sourceRosterId,
         (sourceRosterSelectionCounts.get(asset.sourceRosterId) ?? 0) + 1,
       );
-      sourceRosterValueTaken.set(
-        asset.sourceRosterId,
-        (sourceRosterValueTaken.get(asset.sourceRosterId) ?? 0) +
-          (asset.value ?? 0),
-      );
     }
 
     expansionTeams[teamIndex].picks.push({
@@ -357,186 +604,171 @@ function simulateExpansionDraft({
   return {
     expansionTeams,
     selectedAssetIds,
-    sourceRosterSelectionCounts,
-    sourceRosterValueTaken,
   };
 }
 
-function TeamImpactChart({
-  data,
-  countSeriesLabel,
-}: {
-  data: TeamDraftImpact[];
-  countSeriesLabel: string;
-}) {
-  const maxValueTaken = Math.max(...data.map((item) => item.totalValueTaken), 0);
-  const maxAssetsTaken = Math.max(...data.map((item) => item.assetsTaken), 0);
-
-  if (maxValueTaken === 0 && maxAssetsTaken === 0) {
-    return (
-      <div className={styles.emptyState}>
-        No expansion picks are being filled under the current settings.
-      </div>
-    );
-  }
-
-  const chartWidth = Math.max(840, data.length * 92);
-  const chartHeight = 320;
-  const margin = {
-    top: 22,
-    right: 60,
-    bottom: 104,
-    left: 60,
-  };
-  const innerWidth = chartWidth - margin.left - margin.right;
-  const innerHeight = chartHeight - margin.top - margin.bottom;
-  const bandWidth = innerWidth / data.length;
-  const barWidth = Math.min(34, bandWidth * 0.42);
-  const valueScaleMax = Math.max(maxValueTaken, 1);
-  const assetScaleMax = Math.max(maxAssetsTaken, 1);
-  const gridLineCount = 4;
-
-  const points = data.map((item, index) => {
-    const x = margin.left + bandWidth * index + bandWidth / 2;
-    const barHeight = (item.totalValueTaken / valueScaleMax) * innerHeight;
-    const barY = margin.top + innerHeight - barHeight;
-    const lineY =
-      margin.top + innerHeight - (item.assetsTaken / assetScaleMax) * innerHeight;
+function preparePlannerData(data: PlannerData): PreparedPlannerData {
+  const starterSlots = getStarterSlots(data.league.rosterPositions);
+  const preparedRosters = data.rosters.map((roster) => {
+    const sortedAssets = [...roster.players, ...roster.draftPicks].sort(comparePlayers);
+    const { starters, benchAssets } = buildLineup(sortedAssets, starterSlots);
+    const starterValue = sumAssetValues(starters.map((starter) => starter.asset));
 
     return {
-      ...item,
-      x,
-      barHeight,
-      barY,
-      lineY,
+      ...roster,
+      sortedAssets,
+      preDraftStarterValue: starterValue,
+      preDraftTotalValue: starterValue + sumAssetValues(benchAssets),
+    } satisfies PreparedRoster;
+  });
+  const preDraftRosterValueByKey = new Map<
+    string,
+    Pick<RosterValueSnapshot, "starterValue" | "totalValue">
+  >(
+    preparedRosters.map((roster) => [
+      `roster-${roster.rosterId}`,
+      {
+        starterValue: roster.preDraftStarterValue,
+        totalValue: roster.preDraftTotalValue,
+      },
+    ]),
+  );
+  const freeAgentPool = data.freeAgents
+    .filter((player) => !player.isUndraftedRookie)
+    .map(
+      (player) =>
+        ({
+          ...player,
+          sourceRosterId: null,
+          sourceTeamName: "F/A",
+          sourceOwnerName: "Free agency",
+          sourceType: "freeAgent",
+        }) satisfies PoolAsset,
+    );
+
+  return {
+    freeAgentPool,
+    preparedRosters,
+    preDraftRosterValueByKey,
+    starterSlots,
+  };
+}
+
+function buildProtectedRosters(
+  preparedRosters: PreparedRoster[],
+  requestedKeepers: number,
+): ProtectedRoster[] {
+  return preparedRosters.map((roster) => {
+    const exposed = roster.sortedAssets.slice(requestedKeepers);
+    const draftableExposed = exposed.filter(
+      (asset) => asset.assetType === "pick" || !asset.isUndraftedRookie,
+    );
+
+    return {
+      ...roster,
+      assets: roster.sortedAssets,
+      keepers: roster.sortedAssets.slice(0, requestedKeepers),
+      exposed,
+      draftableExposed,
     };
   });
+}
 
-  const linePath = points
-    .map((point, index) =>
-      `${index === 0 ? "M" : "L"} ${point.x.toFixed(1)} ${point.lineY.toFixed(1)}`,
+function buildPlannerViewModel(
+  preparedData: PreparedPlannerData,
+  protectedRosters: ProtectedRoster[],
+  sourceTeamSelectionCap: number,
+): PlannerViewModel {
+  const requestedSelectionsPerExpansionTeam = EXPANSION_PICKS_RANGE.max;
+  const simulationSettings = {
+    requestedSelectionsPerExpansionTeam,
+    draftMode: "snake" satisfies DraftMode,
+    sourceTeamSelectionCap,
+    includeFreeAgents: true,
+  } satisfies SimulationSettings;
+
+  const availablePool = protectedRosters
+    .flatMap((roster) =>
+      roster.draftableExposed.map(
+        (player) =>
+          ({
+            ...player,
+            sourceRosterId: roster.rosterId,
+            sourceTeamName: roster.teamName,
+            sourceOwnerName: roster.ownerName,
+            sourceType: "roster",
+          }) satisfies PoolAsset,
+      ),
     )
-    .join(" ");
+    .sort(comparePlayers);
 
-  return (
-    <div className={styles.chartBlock}>
-      <div className={styles.chartLegend}>
-        <span className={styles.legendItem}>
-          <span className={`${styles.legendSwatch} ${styles.legendSwatchValue}`} />
-          Total value taken
-        </span>
-        <span className={styles.legendItem}>
-          <span className={`${styles.legendSwatch} ${styles.legendSwatchPlayers}`} />
-          {countSeriesLabel}
-        </span>
-      </div>
+  const { expansionTeams, selectedAssetIds } = simulateExpansionDraft({
+    rosterPool: availablePool,
+    freeAgentPool: preparedData.freeAgentPool,
+    settings: simulationSettings,
+  });
 
-      <div className={styles.chartScroller}>
-        <svg
-          className={styles.impactChart}
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          role="img"
-          aria-label={`Chart of expansion-draft impact by team, showing total value taken and ${countSeriesLabel.toLowerCase()}`}
-        >
-          {Array.from({ length: gridLineCount + 1 }, (_, index) => {
-            const ratio = index / gridLineCount;
-            const y = margin.top + innerHeight - ratio * innerHeight;
-            const valueTick = (valueScaleMax / gridLineCount) * index;
-            const assetTick = (assetScaleMax / gridLineCount) * index;
+  const resultingLeagueRosters: ResultingLeagueRoster[] = [
+    ...protectedRosters.map((roster) => {
+      const resultingAssets = roster.assets
+        .filter((asset) => !selectedAssetIds.has(asset.playerId))
+        .sort(comparePlayers);
+      const { starters, benchAssets } = buildLineup(resultingAssets, preparedData.starterSlots);
 
-            return (
-              <g key={index}>
-                <line
-                  className={styles.chartGridLine}
-                  x1={margin.left}
-                  y1={y}
-                  x2={chartWidth - margin.right}
-                  y2={y}
-                />
-                <text className={styles.chartAxisText} x={margin.left - 12} y={y + 4}>
-                  {formatCompactNumber(Math.round(valueTick))}
-                </text>
-                <text
-                  className={styles.chartAxisText}
-                  x={chartWidth - margin.right + 12}
-                  y={y + 4}
-                  textAnchor="start"
-                >
-                  {Math.round(assetTick)}
-                </text>
-              </g>
-            );
-          })}
+      return {
+        rosterKey: `roster-${roster.rosterId}`,
+        teamName: roster.teamName,
+        ownerName: roster.ownerName,
+        assetCount: resultingAssets.length,
+        starters,
+        benchAssets,
+        isExpansion: false,
+      } satisfies ResultingLeagueRoster;
+    }),
+    ...expansionTeams.map((team) => {
+      const teamAssets = [...team.picks].sort(comparePlayers);
+      const { starters, benchAssets } = buildLineup(teamAssets, preparedData.starterSlots);
 
-          <line
-            className={styles.chartAxisLine}
-            x1={margin.left}
-            y1={margin.top + innerHeight}
-            x2={chartWidth - margin.right}
-            y2={margin.top + innerHeight}
-          />
+      return {
+        rosterKey: team.name,
+        teamName: team.name,
+        ownerName: "Expansion franchise",
+        assetCount: teamAssets.length,
+        starters,
+        benchAssets,
+        isExpansion: true,
+      } satisfies ResultingLeagueRoster;
+    }),
+  ];
+  const orderedResultingLeagueRosters = [
+    ...resultingLeagueRosters.filter((roster) => roster.isExpansion),
+    ...resultingLeagueRosters.filter((roster) => !roster.isExpansion),
+  ];
+  const combinedRosterValues: CombinedRosterValueSnapshot[] = orderedResultingLeagueRosters.map(
+    (roster) => {
+      const starterAssets = roster.starters.map((starter) => starter.asset);
+      const postStarterValue = sumAssetValues(starterAssets);
+      const preDraftValues = preparedData.preDraftRosterValueByKey.get(roster.rosterKey);
 
-          {points.map((point) => (
-            <g key={point.rosterId}>
-              <title>
-                {`${point.teamName}: ${point.assetsTaken} taken, ${formatCompactNumber(point.totalValueTaken)} value`}
-              </title>
-              <rect
-                className={styles.chartBar}
-                x={point.x - barWidth / 2}
-                y={point.barY}
-                width={barWidth}
-                height={point.barHeight}
-                rx={10}
-              />
-              {point.totalValueTaken > 0 ? (
-                <text
-                  className={styles.chartValueLabel}
-                  x={point.x}
-                  y={Math.max(margin.top - 2, point.barY - 8)}
-                  textAnchor="middle"
-                >
-                  {formatCompactNumber(Math.round(point.totalValueTaken))}
-                </text>
-              ) : null}
-              <text
-                className={styles.chartLabel}
-                x={point.x}
-                y={chartHeight - 26}
-                textAnchor="end"
-                transform={`rotate(-35 ${point.x} ${chartHeight - 26})`}
-              >
-                {shortenTeamLabel(point.teamName)}
-              </text>
-            </g>
-          ))}
-
-          <path className={styles.chartLine} d={linePath} />
-
-          {points.map((point) => (
-            <g key={`dot-${point.rosterId}`}>
-              <circle
-                className={styles.chartDot}
-                cx={point.x}
-                cy={point.lineY}
-                r={5}
-              />
-              {point.assetsTaken > 0 ? (
-                <text
-                  className={styles.chartPointLabel}
-                  x={point.x}
-                  y={Math.max(margin.top + 10, point.lineY - 10)}
-                  textAnchor="middle"
-                >
-                  {point.assetsTaken}
-                </text>
-              ) : null}
-            </g>
-          ))}
-        </svg>
-      </div>
-    </div>
+      return {
+        rosterKey: roster.rosterKey,
+        teamName: roster.teamName,
+        ownerName: roster.ownerName,
+        isExpansion: roster.isExpansion,
+        preStarterValue: preDraftValues?.starterValue ?? null,
+        preTotalValue: preDraftValues?.totalValue ?? null,
+        postStarterValue,
+        postTotalValue: postStarterValue + sumAssetValues(roster.benchAssets),
+      } satisfies CombinedRosterValueSnapshot;
+    },
   );
+
+  return {
+    combinedRosterValues,
+    expansionTeams,
+    orderedResultingLeagueRosters,
+    protectedRosters,
+  };
 }
 
 function RosterValueChart({
@@ -544,155 +776,95 @@ function RosterValueChart({
   emptyStateMessage,
   ariaLabel,
 }: {
-  data: RosterValueSnapshot[];
+  data: CombinedRosterValueSnapshot[];
   emptyStateMessage: string;
   ariaLabel: string;
 }) {
-  const maxValue = Math.max(...data.map((item) => item.totalValue), 0);
-
+  const sortedData = [...data].sort(
+    (left, right) =>
+      left.postTotalValue - right.postTotalValue ||
+      left.postStarterValue - right.postStarterValue ||
+      left.teamName.localeCompare(right.teamName),
+  );
+  const maxValue = Math.max(
+    ...sortedData.flatMap((item) => [
+      item.postStarterValue,
+      item.postTotalValue,
+      item.preStarterValue ?? 0,
+      item.preTotalValue ?? 0,
+    ]),
+    0,
+  );
   if (maxValue === 0) {
     return <div className={styles.emptyState}>{emptyStateMessage}</div>;
   }
-
-  const chartWidth = Math.max(840, data.length * 92);
-  const chartHeight = 320;
-  const margin = {
-    top: 22,
-    right: 24,
-    bottom: 104,
-    left: 60,
-  };
-  const innerWidth = chartWidth - margin.left - margin.right;
-  const innerHeight = chartHeight - margin.top - margin.bottom;
-  const bandWidth = innerWidth / data.length;
-  const seriesGap = Math.min(12, bandWidth * 0.12);
-  const barWidth = Math.min(24, (bandWidth - seriesGap) / 2.35);
-  const valueScaleMax = Math.max(maxValue, 1);
-  const gridLineCount = 4;
-
-  const bars = data.map((item, index) => {
-    const centerX = margin.left + bandWidth * index + bandWidth / 2;
-    const starterHeight = (item.starterValue / valueScaleMax) * innerHeight;
-    const totalHeight = (item.totalValue / valueScaleMax) * innerHeight;
-
-    return {
-      ...item,
-      centerX,
-      starterX: centerX - seriesGap / 2 - barWidth,
-      totalX: centerX + seriesGap / 2,
-      starterHeight,
-      totalHeight,
-      starterY: margin.top + innerHeight - starterHeight,
-      totalY: margin.top + innerHeight - totalHeight,
-    };
-  });
 
   return (
     <div className={styles.chartBlock}>
       <div className={styles.chartLegend}>
         <span className={styles.legendItem}>
-          <span
-            className={`${styles.legendSwatch} ${styles.legendSwatchStarterValue}`}
-          />
-          Starter value
+          <span className={styles.legendExamples}>
+            <span
+              className={`${styles.legendSwatch} ${styles.legendSwatchStarterValueFaded}`}
+            />
+            <span
+              className={`${styles.legendSwatch} ${styles.legendSwatchRosterValueFaded}`}
+            />
+          </span>
+          Pre-Draft
         </span>
         <span className={styles.legendItem}>
-          <span
-            className={`${styles.legendSwatch} ${styles.legendSwatchRosterValue}`}
-          />
-          Whole roster value
+          <span className={styles.legendExamples}>
+            <span
+              className={`${styles.legendSwatch} ${styles.legendSwatchStarterValue}`}
+            />
+            <span
+              className={`${styles.legendSwatch} ${styles.legendSwatchRosterValue}`}
+            />
+          </span>
+          Post-Draft
         </span>
       </div>
 
-      <div className={styles.chartScroller}>
-        <svg
-          className={styles.impactChart}
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          role="img"
-          aria-label={ariaLabel}
-        >
-          {Array.from({ length: gridLineCount + 1 }, (_, index) => {
-            const ratio = index / gridLineCount;
-            const y = margin.top + innerHeight - ratio * innerHeight;
-            const valueTick = (valueScaleMax / gridLineCount) * index;
+      <div className={styles.horizontalChart} role="img" aria-label={ariaLabel}>
+        {sortedData.map((item) => {
+          const preStarterValue = item.preStarterValue ?? 0;
+          const preTotalValue = item.preTotalValue ?? 0;
 
-            return (
-              <g key={index}>
-                <line
-                  className={styles.chartGridLine}
-                  x1={margin.left}
-                  y1={y}
-                  x2={chartWidth - margin.right}
-                  y2={y}
-                />
-                <text className={styles.chartAxisText} x={margin.left - 12} y={y + 4}>
-                  {formatCompactNumber(Math.round(valueTick))}
-                </text>
-              </g>
-            );
-          })}
+          return (
+            <article key={item.rosterKey} className={styles.chartRow}>
+              <div className={styles.chartRowHeader}>
+                <strong className={styles.chartTeamName}>{item.teamName}</strong>
+                <span className={styles.chartRowMeta}>
+                  {item.isExpansion ? "Expansion franchise" : item.ownerName}
+                </span>
+              </div>
 
-          <line
-            className={styles.chartAxisLine}
-            x1={margin.left}
-            y1={margin.top + innerHeight}
-            x2={chartWidth - margin.right}
-            y2={margin.top + innerHeight}
-          />
-
-          {bars.map((bar) => (
-            <g key={bar.rosterKey}>
-              <title>
-                {`${bar.teamName}: starters ${formatCompactNumber(bar.starterValue)}, whole roster ${formatCompactNumber(bar.totalValue)}`}
-              </title>
-              <rect
-                className={styles.chartBarStarter}
-                x={bar.starterX}
-                y={bar.starterY}
-                width={barWidth}
-                height={bar.starterHeight}
-                rx={10}
+              <ComparisonBarMeter
+                label="Starters"
+                preValueLabel={formatCompactNumber(Math.round(preStarterValue))}
+                postValueLabel={formatCompactNumber(Math.round(item.postStarterValue))}
+                preRatio={preStarterValue / Math.max(maxValue, 1)}
+                postRatio={item.postStarterValue / Math.max(maxValue, 1)}
+                tone="starter"
               />
-              {bar.starterValue > 0 ? (
-                <text
-                  className={styles.chartValueLabel}
-                  x={bar.starterX + barWidth / 2}
-                  y={Math.max(margin.top - 2, bar.starterY - 8)}
-                  textAnchor="middle"
-                >
-                  {formatCompactNumber(Math.round(bar.starterValue))}
-                </text>
-              ) : null}
-              <rect
-                className={styles.chartBarRoster}
-                x={bar.totalX}
-                y={bar.totalY}
-                width={barWidth}
-                height={bar.totalHeight}
-                rx={10}
+              <ComparisonBarMeter
+                label="Roster"
+                preValueLabel={formatCompactNumber(Math.round(preTotalValue))}
+                postValueLabel={formatCompactNumber(Math.round(item.postTotalValue))}
+                preRatio={preTotalValue / Math.max(maxValue, 1)}
+                postRatio={item.postTotalValue / Math.max(maxValue, 1)}
+                tone="roster"
               />
-              {bar.totalValue > 0 ? (
-                <text
-                  className={styles.chartValueLabel}
-                  x={bar.totalX + barWidth / 2}
-                  y={Math.max(margin.top - 2, bar.totalY - 8)}
-                  textAnchor="middle"
-                >
-                  {formatCompactNumber(Math.round(bar.totalValue))}
-                </text>
+
+              {item.preTotalValue == null ? (
+                <p className={styles.chartComparisonNote}>
+                  New franchise: pre-draft baseline is zero.
+                </p>
               ) : null}
-              <text
-                className={styles.chartLabel}
-                x={bar.centerX}
-                y={chartHeight - 26}
-                textAnchor="end"
-                transform={`rotate(-35 ${bar.centerX} ${chartHeight - 26})`}
-              >
-                {shortenTeamLabel(bar.teamName)}
-              </text>
-            </g>
-          ))}
-        </svg>
+            </article>
+          );
+        })}
       </div>
     </div>
   );
@@ -726,11 +898,96 @@ function PlayerCard({
         </p>
         <p className={styles.playerMeta}>{assetMeta(player)}</p>
         {secondaryLine ? <p className={styles.secondaryMeta}>{secondaryLine}</p> : null}
-        {player.nickname ? (
+        {player.nickname && !compact ? (
           <p className={styles.nickname}>&quot;{player.nickname}&quot;</p>
         ) : null}
       </div>
     </article>
+  );
+}
+
+function CompactRangeControl({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+  onCommit,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+  onCommit: () => void;
+}) {
+  return (
+    <label className={styles.compactControl}>
+      <span className={styles.compactControlHeader}>
+        <span className={styles.compactControlLabel}>{label}</span>
+        <span className={styles.compactControlValue}>{value}</span>
+      </span>
+      <input
+        className={`${styles.range} ${styles.compactRange}`}
+        type="range"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        onPointerUp={onCommit}
+        onKeyUp={onCommit}
+        aria-label={`${label}: ${value}`}
+      />
+      <span className={styles.compactControlBounds} aria-hidden="true">
+        <span>{min}</span>
+        <span>{max}</span>
+      </span>
+    </label>
+  );
+}
+
+function ComparisonBarMeter({
+  label,
+  preValueLabel,
+  postValueLabel,
+  preRatio,
+  postRatio,
+  tone,
+}: {
+  label: string;
+  preValueLabel: string;
+  postValueLabel: string;
+  preRatio: number;
+  postRatio: number;
+  tone: "starter" | "roster";
+}) {
+  const solidFillClassName =
+    tone === "starter" ? styles.chartSeriesFillStarter : styles.chartSeriesFillRoster;
+  const fadedFillClassName =
+    tone === "starter"
+      ? styles.chartSeriesFillStarterFaded
+      : styles.chartSeriesFillRosterFaded;
+  const preWidthPercent = preRatio <= 0 ? 0 : Math.max(preRatio * 100, 4);
+  const postWidthPercent = postRatio <= 0 ? 0 : Math.max(postRatio * 100, 4);
+
+  return (
+    <div className={styles.chartSeriesRow}>
+      <span className={styles.chartSeriesLabel}>{label}</span>
+      <span className={styles.chartSeriesTrack}>
+        <span
+          className={`${styles.chartSeriesFill} ${styles.chartSeriesFillBackdrop} ${fadedFillClassName}`}
+          style={{ width: `${preWidthPercent}%` }}
+        />
+        <span
+          className={`${styles.chartSeriesFill} ${styles.chartSeriesFillInset} ${solidFillClassName}`}
+          style={{ width: `${postWidthPercent}%` }}
+        />
+      </span>
+      <span className={styles.chartSeriesMetric}>
+        {postValueLabel} / {preValueLabel}
+      </span>
+    </div>
   );
 }
 
@@ -809,9 +1066,16 @@ function SleeperRow({
   );
 }
 
-function ResultingRosterCard({ roster }: { roster: ResultingLeagueRoster }) {
+function ResultingRosterCard({
+  roster,
+  anchorId,
+}: {
+  roster: ResultingLeagueRoster;
+  anchorId?: string;
+}) {
   return (
     <article
+      id={anchorId}
       className={
         roster.isExpansion
           ? `${styles.rosterCard} ${styles.rosterCardExpansion}`
@@ -864,460 +1128,194 @@ function ResultingRosterCard({ roster }: { roster: ResultingLeagueRoster }) {
   );
 }
 
-export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
-  const [keepersPerTeam, setKeepersPerTeam] = useState(
-    clamp(data.defaultKeepers, KEEPERS_RANGE.min, KEEPERS_RANGE.max),
-  );
-  const [maxSelectionsFromSingleTeam, setMaxSelectionsFromSingleTeam] = useState<number>(
-    clamp(4, SOURCE_TEAM_CAP_RANGE.min, SOURCE_TEAM_CAP_RANGE.max),
-  );
-  const [includeDraftPicks, setIncludeDraftPicks] = useState(true);
-  const [includeFreeAgents, setIncludeFreeAgents] = useState(true);
-  const [draftMode, setDraftMode] = useState<DraftMode>("snake");
+function SettingsPanel({
+  settings,
+  onSettingsChange,
+}: {
+  settings: PlannerSettings;
+  onSettingsChange: (value: PlannerSettings) => void;
+}) {
+  const [draftSettings, setDraftSettings] = useState(() => settings);
+  const frameIdRef = useRef<number | null>(null);
+  const pendingSettingsRef = useRef(settings);
 
-  const requestedKeepers = clamp(
-    keepersPerTeam,
-    KEEPERS_RANGE.min,
-    KEEPERS_RANGE.max,
-  );
-  const requestedSelectionsPerExpansionTeam = EXPANSION_PICKS_RANGE.max;
-  const sourceTeamSelectionCap = clamp(
-    maxSelectionsFromSingleTeam,
-    SOURCE_TEAM_CAP_RANGE.min,
-    SOURCE_TEAM_CAP_RANGE.max,
-  );
-  const availableDraftPickCount = data.rosters.reduce(
-    (total, roster) => total + roster.draftPicks.length,
-    0,
-  );
-  const starterSlots = getStarterSlots(data.league.rosterPositions);
-  const simulationSettings = {
-    requestedSelectionsPerExpansionTeam,
-    draftMode,
-    sourceTeamSelectionCap,
-    includeFreeAgents,
-  } satisfies SimulationSettings;
-
-  const protectedRosters: ProtectedRoster[] = data.rosters.map((roster) => {
-    const assets = includeDraftPicks
-      ? [...roster.players, ...roster.draftPicks].sort(comparePlayers)
-      : roster.players;
-    const exposed = assets.slice(requestedKeepers);
-    const draftableExposed = exposed.filter(
-      (asset) => asset.assetType === "pick" || !asset.isUndraftedRookie,
-    );
-
-    return {
-      ...roster,
-      assets,
-      keepers: assets.slice(0, requestedKeepers),
-      exposed,
-      draftableExposed,
+  useEffect(() => {
+    return () => {
+      if (frameIdRef.current != null) {
+        cancelAnimationFrame(frameIdRef.current);
+      }
     };
-  });
+  }, []);
 
-  const availablePool = protectedRosters
-    .flatMap((roster) =>
-      roster.draftableExposed.map(
-        (player) =>
-          ({
-            ...player,
-            sourceRosterId: roster.rosterId,
-            sourceTeamName: roster.teamName,
-            sourceOwnerName: roster.ownerName,
-            sourceType: "roster",
-          }) satisfies PoolAsset,
+  const flushPendingSettings = () => {
+    if (frameIdRef.current != null) {
+      cancelAnimationFrame(frameIdRef.current);
+      frameIdRef.current = null;
+    }
+
+    const nextSettings = pendingSettingsRef.current;
+
+    startTransition(() => {
+      onSettingsChange(nextSettings);
+    });
+  };
+
+  const scheduleSettingsCommit = (nextSettings: PlannerSettings) => {
+    pendingSettingsRef.current = nextSettings;
+
+    if (frameIdRef.current != null) {
+      return;
+    }
+
+    frameIdRef.current = requestAnimationFrame(() => {
+      frameIdRef.current = null;
+      startTransition(() => {
+        onSettingsChange(pendingSettingsRef.current);
+      });
+    });
+  };
+
+  const updateDraftSettings = (nextSettingsPatch: Partial<PlannerSettings>) => {
+    setDraftSettings((currentSettings) => {
+      const nextSettings = {
+        ...currentSettings,
+        ...nextSettingsPatch,
+      };
+
+      scheduleSettingsCommit(nextSettings);
+
+      return nextSettings;
+    });
+  };
+
+  return (
+    <section
+      id="planner-settings"
+      className={styles.controlsPanel}
+      aria-label="Simulation settings"
+    >
+      <div className={styles.compactSettingsBar}>
+        <CompactRangeControl
+          label="Keepers"
+          value={draftSettings.requestedKeepers}
+          min={KEEPERS_RANGE.min}
+          max={KEEPERS_RANGE.max}
+          onChange={(value) => updateDraftSettings({ requestedKeepers: value })}
+          onCommit={flushPendingSettings}
+        />
+        <CompactRangeControl
+          label="Max/team"
+          value={draftSettings.sourceTeamSelectionCap}
+          min={SOURCE_TEAM_CAP_RANGE.min}
+          max={SOURCE_TEAM_CAP_RANGE.max}
+          onChange={(value) => updateDraftSettings({ sourceTeamSelectionCap: value })}
+          onCommit={flushPendingSettings}
+        />
+      </div>
+    </section>
+  );
+}
+
+export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
+  const [settings, dispatchSettings] = useReducer(
+    plannerSettingsReducer,
+    data,
+    createInitialPlannerSettings,
+  );
+  const preparedData = useMemo(() => preparePlannerData(data), [data]);
+  const protectedRosters = useMemo(
+    () => buildProtectedRosters(preparedData.preparedRosters, settings.requestedKeepers),
+    [preparedData.preparedRosters, settings.requestedKeepers],
+  );
+  const viewModel = useMemo(
+    () =>
+      buildPlannerViewModel(
+        preparedData,
+        protectedRosters,
+        settings.sourceTeamSelectionCap,
       ),
-    )
-    .sort(comparePlayers);
-  const freeAgentPool = data.freeAgents
-    .filter((player) => !player.isUndraftedRookie)
-    .map(
-      (player) =>
-        ({
-          ...player,
-          sourceRosterId: null,
-          sourceTeamName: "F/A",
-          sourceOwnerName: "Free agency",
-          sourceType: "freeAgent",
-        }) satisfies PoolAsset,
-    );
-  const excludedRosterUndraftedRookieCount = protectedRosters.reduce(
-    (total, roster) => total + (roster.exposed.length - roster.draftableExposed.length),
-    0,
-  );
-  const excludedFreeAgentUndraftedRookieCount =
-    data.freeAgents.length - freeAgentPool.length;
-  const excludedUndraftedRookieCount =
-    excludedRosterUndraftedRookieCount +
-    (includeFreeAgents ? excludedFreeAgentUndraftedRookieCount : 0);
-
-  const draftableAssetLimit = protectedRosters.reduce(
-    (total, roster) => total + Math.min(roster.draftableExposed.length, sourceTeamSelectionCap),
-    0,
-  );
-  const activeDraftPoolCount =
-    availablePool.length + (includeFreeAgents ? freeAgentPool.length : 0);
-  const maxFillableSelectionsPerExpansionTeam = Math.min(
-    EXPANSION_PICKS_RANGE.max,
-    Math.floor(
-      (draftableAssetLimit + (includeFreeAgents ? freeAgentPool.length : 0)) /
-        EXPANSION_TEAM_NAMES.length,
-    ),
-  );
-
-  const {
-    expansionTeams,
-    selectedAssetIds,
-    sourceRosterSelectionCounts,
-    sourceRosterValueTaken,
-  } = simulateExpansionDraft({
-    rosterPool: availablePool,
-    freeAgentPool,
-    settings: simulationSettings,
-  });
-
-  const totalExpansionSelections = expansionTeams.reduce(
-    (total, team) => total + team.picks.length,
-    0,
-  );
-  const remainingAssetCount = activeDraftPoolCount - totalExpansionSelections;
-  const actualSelectionsByExpansionTeam = expansionTeams.map((team) => team.picks.length);
-  const hasConstrainedDraft =
-    actualSelectionsByExpansionTeam.some(
-      (count) => count !== requestedSelectionsPerExpansionTeam,
-    ) || requestedSelectionsPerExpansionTeam > maxFillableSelectionsPerExpansionTeam;
-  const countSeriesLabel = includeDraftPicks ? "Assets taken" : "Players taken";
-  const assetLabel = includeDraftPicks ? "assets" : "players";
-
-  const impactByTeam: TeamDraftImpact[] = protectedRosters.map((roster) => ({
-    rosterId: roster.rosterId,
-    teamName: roster.teamName,
-    ownerName: roster.ownerName,
-    assetsTaken: sourceRosterSelectionCounts.get(roster.rosterId) ?? 0,
-    totalValueTaken: sourceRosterValueTaken.get(roster.rosterId) ?? 0,
-  }));
-  const resultingLeagueRosters: ResultingLeagueRoster[] = [
-    ...protectedRosters.map((roster) => {
-      const resultingAssets = roster.assets
-        .filter((asset) => !selectedAssetIds.has(asset.playerId))
-        .sort(comparePlayers);
-      const { starters, benchAssets } = buildLineup(resultingAssets, starterSlots);
-
-      return {
-        rosterKey: `roster-${roster.rosterId}`,
-        teamName: roster.teamName,
-        ownerName: roster.ownerName,
-        assetCount: resultingAssets.length,
-        starters,
-        benchAssets,
-        isExpansion: false,
-      } satisfies ResultingLeagueRoster;
-    }),
-    ...expansionTeams.map((team) => {
-      const teamAssets = [...team.picks].sort(comparePlayers);
-      const { starters, benchAssets } = buildLineup(teamAssets, starterSlots);
-
-      return {
-        rosterKey: team.name,
-        teamName: team.name,
-        ownerName: "Expansion franchise",
-        assetCount: teamAssets.length,
-        starters,
-        benchAssets,
-        isExpansion: true,
-      } satisfies ResultingLeagueRoster;
-    }),
-  ];
-  const preDraftRosterValues: RosterValueSnapshot[] = protectedRosters.map((roster) => {
-    const { starters, benchAssets } = buildLineup(roster.assets, starterSlots);
-    const starterAssets = starters.map((starter) => starter.asset);
-    const starterValue = sumAssetValues(starterAssets);
-
-    return {
-      rosterKey: `pre-${roster.rosterId}`,
-      teamName: roster.teamName,
-      ownerName: roster.ownerName,
-      starterValue,
-      totalValue: starterValue + sumAssetValues(benchAssets),
-    } satisfies RosterValueSnapshot;
-  });
-  const resultingRosterValues: RosterValueSnapshot[] = resultingLeagueRosters.map(
-    (roster) => {
-      const starterAssets = roster.starters.map((starter) => starter.asset);
-      const starterValue = sumAssetValues(starterAssets);
-
-      return {
-        rosterKey: roster.rosterKey,
-        teamName: roster.teamName,
-        ownerName: roster.ownerName,
-        starterValue,
-        totalValue: starterValue + sumAssetValues(roster.benchAssets),
-      } satisfies RosterValueSnapshot;
-    },
+    [preparedData, protectedRosters, settings.sourceTeamSelectionCap],
   );
 
   return (
     <section id="planner" className={styles.planner}>
-      <div className={styles.controlsPanel}>
-        <div className={styles.controlsGrid}>
-          <label className={styles.control}>
-            <span className={styles.controlLabel}>Keepers per team</span>
-            <input
-              className={styles.range}
-              type="range"
-              min={KEEPERS_RANGE.min}
-              max={KEEPERS_RANGE.max}
-              value={requestedKeepers}
-              onChange={(event) => setKeepersPerTeam(Number(event.target.value))}
-            />
-            <strong className={styles.controlValue}>{requestedKeepers}</strong>
-          </label>
+      <SettingsPanel
+        settings={settings}
+        onSettingsChange={(value) => dispatchSettings({ type: "setSettings", value })}
+      />
 
-          <label className={styles.control}>
-            <span className={styles.controlLabel}>Max picks from one team</span>
-            <input
-              className={styles.range}
-              type="range"
-              min={SOURCE_TEAM_CAP_RANGE.min}
-              max={SOURCE_TEAM_CAP_RANGE.max}
-              value={sourceTeamSelectionCap}
-              onChange={(event) =>
-                setMaxSelectionsFromSingleTeam(Number(event.target.value))
-              }
-            />
-            <strong className={styles.controlValue}>{sourceTeamSelectionCap}</strong>
-            <span className={styles.helperText}>
-              Applies across both expansion teams combined. Current{" "}
-              {includeFreeAgents ? "pool plus F/A" : "pool"} can fill up to{" "}
-              {maxFillableSelectionsPerExpansionTeam} per expansion team.
-            </span>
-          </label>
-
-          <label className={styles.control}>
-            <span className={styles.controlLabel}>Include draft picks</span>
-            <span className={styles.toggleRow}>
-              <input
-                className={styles.checkbox}
-                type="checkbox"
-                checked={includeDraftPicks}
-                onChange={(event) => setIncludeDraftPicks(event.target.checked)}
-              />
-              <strong className={styles.toggleValue}>
-                {includeDraftPicks ? "Enabled" : "Disabled"}
-              </strong>
-            </span>
-            <span className={styles.helperText}>
-              Adds {availableDraftPickCount} current rookie picks using the 2026 draft
-              slot tiers.
-            </span>
-          </label>
-
-          <label className={styles.control}>
-            <span className={styles.controlLabel}>Include F/A</span>
-            <span className={styles.toggleRow}>
-              <input
-                className={styles.checkbox}
-                type="checkbox"
-                checked={includeFreeAgents}
-                onChange={(event) => setIncludeFreeAgents(event.target.checked)}
-              />
-              <strong className={styles.toggleValue}>
-                {includeFreeAgents ? "Enabled" : "Disabled"}
-              </strong>
-            </span>
-            <span className={styles.helperText}>
-              Uses {data.freeAgents.length} ranked free agents only after team-owned
-              assets can no longer fill the draft.
-            </span>
-          </label>
-
-          <label className={styles.control}>
-            <span className={styles.controlLabel}>Expansion draft order</span>
-            <select
-              className={styles.select}
-              value={draftMode}
-              onChange={(event) => setDraftMode(event.target.value as DraftMode)}
-            >
-              <option value="snake">Snake</option>
-              <option value="linear">Linear</option>
-            </select>
-            <span className={styles.helperText}>
-              Snake alternates direction every two picks.
-            </span>
-          </label>
-        </div>
-
-        <div className={styles.metricsGrid}>
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Protected {assetLabel}</span>
-            <strong className={styles.metricValue}>
-              {protectedRosters.reduce((total, roster) => total + roster.keepers.length, 0)}
-            </strong>
-          </article>
-
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Expansion pool</span>
-            <strong className={styles.metricValue}>{activeDraftPoolCount}</strong>
-          </article>
-
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Expansion selections</span>
-            <strong className={styles.metricValue}>{totalExpansionSelections}</strong>
-          </article>
-
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Still available</span>
-              <strong className={styles.metricValue}>{remainingAssetCount}</strong>
-            </article>
-          </div>
-
-        {excludedUndraftedRookieCount > 0 ? (
-          <p className={styles.constraintNote}>
-            Undrafted rookies are excluded from expansion selections, removing{" "}
-            {excludedUndraftedRookieCount} player
-            {excludedUndraftedRookieCount === 1 ? "" : "s"} from the available pool.
-          </p>
-        ) : null}
-
-        {hasConstrainedDraft ? (
-          <p className={styles.constraintNote}>
-            Current settings requested {requestedSelectionsPerExpansionTeam} picks per
-            expansion team, but the simulation filled {actualSelectionsByExpansionTeam[0]}
-            {" / "}
-            {actualSelectionsByExpansionTeam[1]} after applying the exposed pool,
-            per-team cap, and {includeFreeAgents ? "optional F/A fallback." : "no F/A fallback."}
-          </p>
-        ) : null}
-      </div>
-
-      <section className={styles.chartPanel}>
+      <section id="planner-values" className={styles.chartPanel}>
         <div className={styles.panelHeader}>
           <div>
-            <p className={styles.eyebrow}>Simulated impact</p>
-            <h2 className={styles.panelTitle}>Value and {assetLabel} lost by team</h2>
+            <p className={styles.eyebrow}>Roster values</p>
+            <h2 className={styles.panelTitle}>Strength board before and after</h2>
           </div>
           <p className={styles.panelNote}>
-            Bars show total value taken. The line shows {countSeriesLabel.toLowerCase()}
-            {" "}from each existing team. Missing values count as 0.
+            Compare each roster&apos;s pre-draft faded bars against post-draft solid overlays in
+            one merged view for starters and full roster value.
           </p>
         </div>
 
-        <TeamImpactChart data={impactByTeam} countSeriesLabel={countSeriesLabel} />
+        <p className={styles.mobileHint}>
+          Each team now keeps its pre-draft and post-draft starter and roster totals in the
+          same compact card.
+        </p>
+
+        <RosterValueChart
+          data={viewModel.combinedRosterValues}
+          emptyStateMessage="No roster values are available for the current simulation."
+          ariaLabel="Chart of pre-draft and post-draft roster values by team, with faded pre-draft bars and solid post-draft overlays for starters and whole roster value in each card"
+        />
       </section>
 
-      <section className={styles.chartPanel}>
-        <div className={styles.panelSection}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.eyebrow}>Resulting values</p>
-              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
-            </div>
-            <p className={styles.panelNote}>
-              Post-draft KTC value totals for each resulting roster. Missing values
-              count as 0.
-            </p>
+      <section id="planner-picks" className={`${styles.panel} ${styles.priorityPanel}`}>
+        <div className={styles.panelHeader}>
+          <div>
+            <p className={styles.eyebrow}>Projected selections</p>
+            <h2 className={styles.panelTitle}>Expansion draft board</h2>
           </div>
-
-          <RosterValueChart
-            data={resultingRosterValues}
-            emptyStateMessage="No roster values are available for the simulated result."
-            ariaLabel="Chart of resulting roster values by team, showing starter value and whole roster value"
-          />
+          <p className={styles.panelNote}>
+            Best exposed players, veteran free agents, and picks are assigned by
+            draft order while excluding undrafted rookies and respecting the
+            single-team cap.
+          </p>
         </div>
 
-        <div className={styles.panelSubsection}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.eyebrow}>Pre-draft values</p>
-              <h3 className={styles.panelTitle}>Starter and whole-roster value</h3>
-            </div>
-            <p className={styles.panelNote}>
-              KTC value totals for each team before the simulated expansion draft.
-              Missing values count as 0.
-            </p>
-          </div>
+        <div className={styles.summaryGrid}>
+          {viewModel.expansionTeams.map((team) => {
+            const anchorId = `expansion-${toAnchorId(team.name)}`;
+            const topPick = team.picks[0];
 
-          <RosterValueChart
-            data={preDraftRosterValues}
-            emptyStateMessage="No roster values are available for the pre-draft view."
-            ariaLabel="Chart of pre-draft roster values by team, showing starter value and whole roster value"
-          />
+            return (
+              <a key={team.name} href={`#${anchorId}`} className={styles.summaryCard}>
+                <span className={styles.summaryLabel}>{team.name}</span>
+                <strong className={styles.summaryValue}>{team.picks.length} picks</strong>
+                <span className={styles.summaryMeta}>
+                  {topPick ? `Starts with ${topPick.fullName}` : "No selections at this setting."}
+                </span>
+              </a>
+            );
+          })}
         </div>
-      </section>
 
-      <div className={styles.contentGrid}>
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.eyebrow}>Protected rosters</p>
-              <h2 className={styles.panelTitle}>Keepers by team</h2>
-            </div>
-            <p className={styles.panelNote}>
-              Each column is sorted by the active ranking source. Draft picks are
-              included when enabled.
-            </p>
-          </div>
+        <p className={styles.mobileHint}>Swipe sideways to compare each expansion team.</p>
 
-          <div className={styles.tableScroller}>
-            <table className={styles.keepersTable}>
-              <thead>
-                <tr>
-                  <th className={styles.stickyColumn}>Slot</th>
-                  {protectedRosters.map((roster) => (
-                    <th key={roster.rosterId}>
-                      <span className={styles.teamName}>{roster.teamName}</span>
-                      <span className={styles.teamOwner}>{roster.ownerName}</span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: requestedKeepers }, (_, index) => index).map(
-                  (rowIndex) => (
-                    <tr key={rowIndex}>
-                      <th className={styles.stickyColumn}>{rowIndex + 1}</th>
-                      {protectedRosters.map((roster) => {
-                        const player = roster.keepers[rowIndex];
+        <div className={styles.expansionScroller}>
+          <div className={styles.expansionGrid}>
+            {viewModel.expansionTeams.map((team) => {
+              const anchorId = `expansion-${toAnchorId(team.name)}`;
 
-                        return (
-                          <td key={`${roster.rosterId}-${rowIndex}`}>
-                            {player ? (
-                              <PlayerCard player={player} compact />
-                            ) : (
-                              <div className={styles.emptyState}>No asset</div>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ),
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.eyebrow}>Expansion teams</p>
-              <h2 className={styles.panelTitle}>Projected selections</h2>
-            </div>
-            <p className={styles.panelNote}>
-              Best exposed players, veteran free agents, and picks are assigned by
-              draft order while excluding undrafted rookies and respecting the
-              single-team cap.
-            </p>
-          </div>
-
-          <div className={styles.expansionScroller}>
-            <div className={styles.expansionGrid}>
-              {expansionTeams.map((team) => (
-                <article key={team.name} className={styles.expansionCard}>
+              return (
+                <article key={team.name} id={anchorId} className={styles.expansionCard}>
                   <div className={styles.expansionHeader}>
-                    <h3>{team.name}</h3>
-                    <span>{team.picks.length} picks</span>
+                    <div>
+                      <h3>{team.name}</h3>
+                      <p className={styles.expansionSubhead}>Projected draft board</p>
+                    </div>
+                    <div className={styles.expansionMeta}>
+                      <span>{team.picks.length} picks</span>
+                      <span>{formatCompactNumber(sumAssetValues(team.picks))} value</span>
+                    </div>
                   </div>
 
                   <div className={styles.playerList}>
@@ -1335,32 +1333,116 @@ export function ExpansionDraftPlanner({ data }: { data: PlannerData }) {
                     )}
                   </div>
                 </article>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      <section className={styles.simulatedPanel}>
+      <section id="planner-rosters" className={styles.simulatedPanel}>
         <div className={styles.panelHeader}>
           <div>
             <p className={styles.eyebrow}>Resulting league</p>
             <h2 className={styles.panelTitle}>
-              Resulting {resultingLeagueRosters.length}-team league rosters
+              Resulting {viewModel.orderedResultingLeagueRosters.length}-team league rosters
             </h2>
           </div>
           <p className={styles.panelNote}>
-            Sleeper-style starter and bench layout using the current lineup slots
-            and simulated expansion outcome.
+            Expansion teams appear first so the new franchises are easier to inspect
+            before paging through the rest of the league.
           </p>
         </div>
 
+        <div className={styles.jumpRail}>
+          {viewModel.orderedResultingLeagueRosters.map((roster) => {
+            const anchorId = `roster-${toAnchorId(roster.rosterKey)}`;
+
+            return (
+              <a
+                key={roster.rosterKey}
+                href={`#${anchorId}`}
+                className={
+                  roster.isExpansion
+                    ? `${styles.jumpChip} ${styles.jumpChipPriority}`
+                    : styles.jumpChip
+                }
+              >
+                {roster.teamName}
+              </a>
+            );
+          })}
+        </div>
+
+        <p className={styles.mobileHint}>Swipe sideways to compare rosters one card at a time.</p>
+
         <div className={styles.rosterScroller}>
           <div className={styles.rosterGrid}>
-            {resultingLeagueRosters.map((roster) => (
-              <ResultingRosterCard key={roster.rosterKey} roster={roster} />
+            {viewModel.orderedResultingLeagueRosters.map((roster) => (
+              <ResultingRosterCard
+                key={roster.rosterKey}
+                roster={roster}
+                anchorId={`roster-${toAnchorId(roster.rosterKey)}`}
+              />
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="planner-keepers" className={styles.panel}>
+        <div className={styles.panelHeader}>
+          <div>
+            <p className={styles.eyebrow}>Protected rosters</p>
+            <h2 className={styles.panelTitle}>Keepers by team</h2>
+          </div>
+          <p className={styles.panelNote}>
+            This remains the full comparison table. Use it when you need the exact
+            protected board team-by-team.
+          </p>
+        </div>
+
+        <p className={styles.mobileHint}>
+          Swipe across the table to compare team columns while the slot column stays pinned.
+        </p>
+
+        <div className={styles.tableScroller}>
+          <table className={styles.keepersTable}>
+            <thead>
+              <tr>
+                <th className={styles.stickyColumn}>Slot</th>
+                {viewModel.protectedRosters.map((roster) => (
+                  <th key={roster.rosterId}>
+                    <span className={styles.teamName}>{roster.teamName}</span>
+                    <span className={styles.teamOwner}>{roster.ownerName}</span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from(
+                { length: settings.requestedKeepers },
+                (_, index) => index,
+              ).map(
+                (rowIndex) => (
+                  <tr key={rowIndex}>
+                    <th className={styles.stickyColumn}>{rowIndex + 1}</th>
+                    {viewModel.protectedRosters.map((roster) => {
+                      const player = roster.keepers[rowIndex];
+
+                      return (
+                        <td key={`${roster.rosterId}-${rowIndex}`}>
+                          {player ? (
+                            <PlayerCard player={player} compact />
+                          ) : (
+                            <div className={styles.emptyState}>No asset</div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </section>
