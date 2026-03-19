@@ -719,11 +719,15 @@
 
 .chartScroller,
 .tableScroller,
-.expansionScroller,
 .rosterScroller {
   overflow-x: auto;
   padding-bottom: 0.35rem;
   -webkit-overflow-scrolling: touch;
+}
+
+.expansionScroller {
+  overflow: visible;
+  padding-bottom: 0;
 }
 
 .impactChart {
@@ -1321,21 +1325,21 @@
     gap: 0.45rem;
   }
 
-  .expansionScroller,
   .rosterScroller {
     scroll-snap-type: x mandatory;
   }
 
-  .expansionGrid,
+  .expansionGrid {
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+
   .rosterGrid {
     gap: 0.55rem;
     grid-auto-flow: column;
     grid-template-columns: none;
     min-width: max-content;
-  }
-
-  .expansionGrid {
-    grid-auto-columns: calc((100vw - 3.15rem) / 2);
   }
 
   .rosterGrid {
@@ -1347,6 +1351,9 @@
     gap: 0.52rem;
     padding: 0.6rem;
     min-height: min(74svh, 39rem);
+  }
+
+  .rosterCard {
     scroll-snap-align: start;
   }
 
